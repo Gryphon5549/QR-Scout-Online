@@ -87,63 +87,65 @@
     <div class="page-shell">
       <div class="hero panel">
         <div class="hero-copy">
-          <div class="eyebrow">Team 2549 • How it works</div>
-          <h2>Use QR Scout in five quick steps.</h2>
-          <p>Host the site on GitHub Pages, connect it to a Google Apps Script backend, and send each scouting entry directly to a Google Sheet.</p>
+          <div class="eyebrow">Team 2549 • New setup</div>
+          <h2>This is the new flow.</h2>
+          <p>Use GitHub Pages for the website, Google Apps Script for the backend, and one shared Google Sheet as the live data destination.</p>
         </div>
       </div>
 
       <div class="how-grid">
         <article class="step-card">
           <div class="step-number">1</div>
-          <h3>Open the scouting form</h3>
-          <p>Load the sample config or upload your own JSON. The app will build the form instantly in the browser with the fields your team needs.</p>
+          <h3>Host the website</h3>
+          <p>Put the frontend on GitHub Pages. This keeps the app simple and fast and lets the browser load it over a real website URL.</p>
         </article>
 
         <article class="step-card">
           <div class="step-number">2</div>
-          <h3>Fill out the match</h3>
-          <p>Enter match data, robot info, booleans, counters, dropdowns, and notes. The layout is built for fast in-match entry without slowing the team down.</p>
+          <h3>Deploy the script</h3>
+          <p>Create a Google Apps Script and deploy it as a Web App. This is the only backend the browser can use to append rows to a sheet.</p>
         </article>
 
         <article class="step-card">
           <div class="step-number">3</div>
-          <h3>Commit the entry</h3>
-          <p>When you are ready, click Commit to review the form. From there you can generate a QR code or send the same record to the Google Sheet.</p>
+          <h3>Use the sheet link</h3>
+          <p>Paste the shared Google Sheet link into the app. The script reads the sheet ID from that URL and appends the row into the tab you choose.</p>
         </article>
 
         <article class="step-card">
           <div class="step-number">4</div>
-          <h3>Generate the QR code</h3>
-          <p>Use the QR code to save a portable version of the scouting data. This is helpful for backup, sharing, or recovering the entry later.</p>
+          <h3>Submit a scouting entry</h3>
+          <p>Fill in the form, click Commit, and choose Sync to Sheet. The website sends a POST to the Apps Script URL, and the script writes the row to the sheet.</p>
         </article>
 
         <article class="step-card">
           <div class="step-number">5</div>
-          <h3>Sync to Google Sheets</h3>
-          <p>Paste the Apps Script Web App URL and the shared Google Sheet link into the sync panel, then click Save Sheet sync. After that, select Sync to Sheet from the modal and the data is sent to the sheet.</p>
+          <h3>Keep it simple</h3>
+          <p>No Google Form mapping. No confusing legacy fields. Just one site URL, one script URL, and one sheet link.</p>
         </article>
       </div>
 
       <div class="tips-box">
-        <h3>How to set up the sync</h3>
+        <h3>Exact setup steps</h3>
         <ol>
-          <li>Host the website on GitHub Pages or run it locally with a web server.</li>
-          <li>Create a Google Apps Script project and deploy it as a Web App.</li>
-          <li>Set the deployment to “Anyone” so the browser can access it.</li>
-          <li>Paste the deployed Apps Script URL and the shared Google Sheet link into the site.</li>
-          <li>Save the sync settings and test by sending one scouting entry.</li>
+          <li>Push the website to GitHub and enable GitHub Pages.</li>
+          <li>In Google Apps Script, create a project and paste in the backend script.</li>
+          <li>Deploy it as a Web App with “Execute as: Me” and “Who has access: Anyone”.</li>
+          <li>Copy the deployed Web App URL and paste it into the site.</li>
+          <li>Copy the shared Google Sheet link and paste it into the site.</li>
+          <li>Optional: enter a tab name such as “Scouting” or leave it blank to use Sheet1.</li>
+          <li>Save and test the sync once to confirm it writes a real row.</li>
         </ol>
       </div>
 
       <div class="tips-box">
-        <h3>Helpful tips</h3>
+        <h3>Rules to remember</h3>
         <ul>
-          <li>Always open the site through a web URL like localhost or GitHub Pages instead of a file path.</li>
-          <li>Use a clear tab name like “Scouting” or “Sheet1” if your sheet has multiple tabs.</li>
-          <li>Keep your JSON field names consistent so the sheet rows stay easy to read and analyze.</li>
-          <li>Use the sample config first to test the flow before building a custom team form.</li>
-          <li>Save the sync values once so every future submission is one click away.</li>
+          <li>Always open the site over a real URL, not a file path.</li>
+          <li>Use the Apps Script Web App URL ending in /exec, not the sheet URL.</li>
+          <li>Use a shared Google Sheet link so the script can open the spreadsheet.</li>
+          <li>Keep the script deployed as Anyone so the browser can call it from GitHub Pages.</li>
+          <li>If the browser still fails, refresh the live page and test again with the deployed URL.</li>
         </ul>
       </div>
     </div>
