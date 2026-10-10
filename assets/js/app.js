@@ -255,7 +255,7 @@
     } else {
       try {
         const parsed = new URL(scriptUrl);
-        if (!/script\.google\.com\/macros\//.test(parsed.href)) {
+        if (!/script\.google\.com\/macros\//.test(parsed.href) || !/\/exec$/.test(parsed.href)) {
           hints.push("Use the Apps Script Web App URL that ends in /exec.");
         }
       } catch (err) {
@@ -264,6 +264,9 @@
     }
     if (location.protocol === "https:" && /github\.io/i.test(location.hostname)) {
       hints.push("GitHub Pages is allowed, but the Apps Script deployment must be set to Anyone.");
+    }
+    if (String(reasonText).toLowerCase().includes("do get") || String(reasonText).toLowerCase().includes("script function not found")) {
+      hints.push("The Apps Script project needs a doGet() function or a valid deployed web app.");
     }
     if (!hints.length) {
       hints.push("Check that the Apps Script is deployed as a Web App and that it is accessible to Anyone.");
@@ -388,10 +391,22 @@
         },
         body
       }).then(async (res) => {
-        const text = await res.text();
-        if (!res.ok) {
-          throw new Error(text || "Google Sheet request failed.");
+        const responseText = await res.text();
+        let parsed = null;
+        try {
+          parsed = responseText ? JSON.parse(responseText) : null;
+        } catch (err) {
+          parsed = null;
         }
+
+        if (!res.ok) {
+          throw new Error(responseText || "Google Sheet request failed.");
+        }
+
+        if (parsed && parsed.ok === false) {
+          throw new Error(parsed.error || "Google Sheet request rejected by the backend.");
+        }
+
         setModalStatus("Scouting data sent to Google Sheet successfully.", false, true);
       }).catch((err) => {
         const raw = err && err.message ? err.message : "Could not sync to Google Sheet.";
