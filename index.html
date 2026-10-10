@@ -11,10 +11,10 @@
 <header>
   <div class="topbar">
     <div class="brand-block">
-      <div class="logo">2549</div>
+      <img src="assets/images/millerbots-logo.svg" alt="Millerbots logo" class="brand-logo">
       <div>
         <h1>QR Scout</h1>
-        <small>Team 2549 scouting</small>
+        <small>Millerbots • Team 2549</small>
       </div>
     </div>
     <nav class="tabs" aria-label="Main navigation">
@@ -27,11 +27,14 @@
 <main>
   <section id="homePage" class="page active" aria-label="Home">
     <div class="page-shell">
-      <div class="hero panel">
+      <div class="hero panel hero-millerbots">
         <div class="hero-copy">
-          <div class="eyebrow">Team 2549 • Match scouting</div>
-          <h2>Fast scouting for every match.</h2>
-          <p>QR Scout gives Team 2549 a simple way to build a form, collect match data in real time, and send every entry to a Google Sheet without a complicated setup.</p>
+          <div class="eyebrow">Millerbots • Team 2549</div>
+          <h2>Built to scout fast. Built to win.</h2>
+          <p>QR Scout gives Millerbots a clean, mobile-friendly way to collect match data, generate QR records, and send entries straight into the team’s Google Sheet workflow.</p>
+        </div>
+        <div class="hero-visual" aria-label="Millerbots team logo">
+          <img src="assets/images/millerbots-logo.svg" alt="Millerbots team logo">
         </div>
         <div class="hero-actions">
           <button type="button" class="primary" data-page="scoutingPage">Open scouting form</button>
@@ -40,15 +43,15 @@
         <div class="mini-stats" aria-label="Quick facts">
           <div class="mini-stat">
             <strong>Fast</strong>
-            <span>match-ready input</span>
+            <span>live match capture</span>
           </div>
           <div class="mini-stat">
             <strong>QR</strong>
-            <span>portable data</span>
+            <span>quick data sharing</span>
           </div>
           <div class="mini-stat">
-            <strong>Sheet</strong>
-            <span>live Google sync</span>
+            <strong>Sync</strong>
+            <span>sheet-ready output</span>
           </div>
         </div>
       </div>
@@ -57,39 +60,42 @@
         <article class="info-card">
           <div class="card-icon">📋</div>
           <h3>Custom match forms</h3>
-          <p>Use a JSON scouting config to build the exact form your team needs for match data, notes, counters, and quick ratings.</p>
+          <p>Use a scouting config to build the exact fields Millerbots needs in real time, from autonomous notes to endgame ratings.</p>
         </article>
         <article class="info-card">
           <div class="card-icon">⚙️</div>
-          <h3>Built for competition</h3>
+          <h3>Competition-ready tools</h3>
           <ul>
-            <li>Boolean checks</li>
-            <li>Counter fields</li>
-            <li>Range ratings</li>
-            <li>Simple sheet sync</li>
+            <li>quick boolean checks</li>
+            <li>number counters</li>
+            <li>range ratings</li>
+            <li>Google Sheet sync</li>
           </ul>
         </article>
         <article class="info-card">
           <div class="card-icon">📲</div>
-          <h3>QR backup + share</h3>
-          <p>Generate a QR code for each record so the data can be saved, shared, or reused without retyping it later.</p>
+          <h3>QR backup workflow</h3>
+          <p>Commit each entry, generate a QR, and keep a fast backup of the match details without retyping anything later.</p>
         </article>
       </div>
 
       <div class="callout">
-        <h3>Simple and reliable</h3>
-        <p>The workflow is built around the parts that matter most: a live scouting form, a Google Apps Script backend, and a Google Sheet destination that keeps everything organized.</p>
+        <h3>Millerbots scouting, simplified</h3>
+        <p>QR Scout is designed to keep scouting quick, organized, and reliable during a busy FRC event. It helps the team collect better match data and move faster after each round.</p>
       </div>
     </div>
   </section>
 
   <section id="howToUsePage" class="page" aria-label="How to use">
     <div class="page-shell">
-      <div class="hero panel">
+      <div class="hero panel hero-millerbots howto-hero">
         <div class="hero-copy">
-          <div class="eyebrow">Team 2549 • Setup guide</div>
-          <h2>How QR Scout works.</h2>
-          <p>This system uses one clean setup: the website runs on GitHub Pages, the backend runs on Google Apps Script, and the data goes straight into a Google Sheet.</p>
+          <div class="eyebrow">Millerbots • Setup guide</div>
+          <h2>How the scouting flow works.</h2>
+          <p>QR Scout is built around one simple idea: collect match data fast, keep it organized, and send the results into a clean Google Sheet workflow without slowing down the team.</p>
+        </div>
+        <div class="hero-visual small" aria-label="Millerbots logo">
+          <img src="assets/images/millerbots-logo.svg" alt="Millerbots team logo">
         </div>
       </div>
 
@@ -97,55 +103,53 @@
         <article class="step-card">
           <div class="step-number">1</div>
           <h3>Open the live site</h3>
-          <p>Host the website on GitHub Pages or run it on localhost. Do not open the project as a local file. Browsers do not allow the fetch needed for sync from a file:// page.</p>
+          <p>Run the website through GitHub Pages or localhost. A real web URL is required so the browser can send scouting data to the backend.</p>
         </article>
 
         <article class="step-card">
           <div class="step-number">2</div>
           <h3>Deploy the backend</h3>
-          <p>Create a Google Apps Script project and deploy it as a Web App. This is the only place that can write to the Google Sheet for you.</p>
+          <p>Set up a Google Apps Script Web App and deploy it with access set to Anyone. This is the part that talks to Google Sheets.</p>
         </article>
 
         <article class="step-card">
           <div class="step-number">3</div>
-          <h3>Paste the two links</h3>
-          <p>Put in the deployed Apps Script URL and the shared Google Sheet link. If your sheet has multiple tabs, enter the tab name too.</p>
+          <h3>Add the script link</h3>
+          <p>Paste the deployed Apps Script URL into the app. If you want the data to land in a specific tab, add the tab name as well.</p>
         </article>
 
         <article class="step-card">
           <div class="step-number">4</div>
           <h3>Fill and commit</h3>
-          <p>Use the scouting form to enter match data, then click Commit. From the review modal, choose Sync to Sheet to append the row to the spreadsheet.</p>
+          <p>Use the form to record match data, click Commit, then choose to sync the entry or generate a QR code for a backup.</p>
         </article>
 
         <article class="step-card">
           <div class="step-number">5</div>
           <h3>Check the sheet</h3>
-          <p>Open the Google Sheet and verify that the new row appears. If it does, the full flow is working and the setup is complete.</p>
+          <p>Open the target Google Sheet and verify the row appears. If it does, the whole Millerbots workflow is working as intended.</p>
         </article>
       </div>
 
       <div class="tips-box">
-        <h3>Exact setup checklist</h3>
+        <h3>Setup checklist</h3>
         <ol>
-          <li>Push the website to GitHub and enable GitHub Pages.</li>
+          <li>Host the website on GitHub Pages or localhost.</li>
           <li>Open Google Apps Script and paste in the backend code.</li>
-          <li>Deploy as a Web App with “Execute as: Me” and “Who has access: Anyone”.</li>
-          <li>Copy the Web App URL that ends in /exec.</li>
-          <li>Share the Google Sheet and copy its link.</li>
-          <li>Paste both URLs into the site and save the sync settings.</li>
-          <li>Test once with a real scouting entry.</li>
+          <li>Deploy the script as a Web App with “Execute as: Me” and “Who has access: Anyone”.</li>
+          <li>Copy the URL that ends in /exec.</li>
+          <li>Paste that URL into the site and save it.</li>
+          <li>Test the sync by sending a real scouting entry.</li>
         </ol>
       </div>
 
       <div class="tips-box">
-        <h3>Rules to remember</h3>
+        <h3>Important reminders</h3>
         <ul>
-          <li>Use the deployed Apps Script URL, not the sheet URL.</li>
-          <li>Use the shared Google Sheet link, not the editor URL.</li>
-          <li>Never open the site from a file path while testing sync.</li>
-          <li>Keep the Apps Script set to Anyone so GitHub Pages can reach it.</li>
-          <li>If the browser says NetworkError, reload the live page and verify the URLs again.</li>
+          <li>Use the Apps Script URL, not the Google Sheet URL.</li>
+          <li>Do not open the site from a file path while testing.</li>
+          <li>Keep the backend deployment set to Anyone.</li>
+          <li>If a fetch request fails, reload the site from localhost or GitHub Pages and retry.</li>
         </ul>
       </div>
     </div>
@@ -196,28 +200,28 @@
   </section>
 
   <section class="panel sync-panel collapsed" id="googleFormSyncPanel">
-    <h3>Google Sheet Sync</h3>
-    <p>Paste the Google Apps Script web app URL and the shared Google Sheet link. This is the only setup needed to send each scouting row to the sheet.</p>
+    <h3>Script Sync</h3>
+    <p>Paste the deployed Google Apps Script URL. The script will receive the JSON payload and write the data to the destination sheet directly.</p>
     <div class="sync-grid">
       <div class="field">
         <label for="googleFormUrl">Google Apps Script Web App URL</label>
         <input id="googleFormUrl" type="url" placeholder="https://script.google.com/macros/s/.../exec">
       </div>
       <div class="field">
-        <label for="googleSheetUrl">Shared Google Sheet link</label>
-        <input id="googleSheetUrl" type="url" placeholder="https://docs.google.com/spreadsheets/d/.../edit?usp=sharing">
-      </div>
-      <div class="field">
         <label for="sheetTabName">Tab name (optional)</label>
         <input id="sheetTabName" type="text" placeholder="Scouting or leave blank for Sheet1">
       </div>
+      <div class="field" style="display:none;">
+        <label for="googleSheetUrl">Shared Google Sheet link</label>
+        <input id="googleSheetUrl" type="url" placeholder="https://docs.google.com/spreadsheets/d/.../edit?usp=sharing">
+      </div>
     </div>
-    <div class="sync-help">Use the deployed Apps Script URL, not the sheet URL. Open the site through GitHub Pages or localhost, not as a local file.</div>
+    <div class="sync-help">The sheet link is no longer required on the website. The backend script will handle the data destination directly. Open the site through GitHub Pages or localhost, not as a local file.</div>
     <div class="sync-actions">
-      <button id="applyGoogleFormBtn" type="button" class="primary">Save Sheet sync</button>
+      <button id="applyGoogleFormBtn" type="button" class="primary">Save Script sync</button>
       <button id="clearGoogleFormBtn" type="button">Clear sync</button>
     </div>
-    <div id="googleFormStatus" class="status" style="margin-top:12px;">No Google Sheet sync configured.</div>
+    <div id="googleFormStatus" class="status" style="margin-top:12px;">No script sync configured.</div>
   </section>
 
   <div id="commitModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="commitTitle">

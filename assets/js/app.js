@@ -251,7 +251,7 @@
       hints.push("Open the site over localhost or GitHub Pages instead of a file path.");
     }
     if (!scriptUrl) {
-      hints.push("Paste the deployed Apps Script Web App URL, not the Google Sheet URL.");
+      hints.push("Paste the deployed Apps Script Web App URL.");
     } else {
       try {
         const parsed = new URL(scriptUrl);
@@ -310,30 +310,30 @@
       delete config.googleFormUrl;
       delete config.googleSheetUrl;
       delete config.googleSheetTab;
-      setGoogleFormStatus("Google Sheet sync cleared.", false);
+      setGoogleFormStatus("Script sync cleared.", false);
       return;
     }
 
-    if (!formUrl || !sheetUrl) {
-      setGoogleFormStatus("Add both the Google Apps Script URL and the shared Google Sheet link.", true);
+    if (!formUrl) {
+      setGoogleFormStatus("Add the Google Apps Script URL.", true);
       return;
     }
 
     try {
       new URL(formUrl);
-      new URL(sheetUrl);
+      if (sheetUrl) new URL(sheetUrl);
     } catch (err) {
-      setGoogleFormStatus("One of the URLs is not valid.", true);
+      setGoogleFormStatus("The script URL is not valid.", true);
       return;
     }
 
     config.googleFormUrl = formUrl;
-    config.googleSheetUrl = sheetUrl;
+    if (sheetUrl) config.googleSheetUrl = sheetUrl;
     config.googleSheetTab = sheetTabName;
     $("googleFormUrl").value = formUrl;
-    $("googleSheetUrl").value = sheetUrl;
+    $("googleSheetUrl").value = sheetUrl || "";
     $("sheetTabName").value = sheetTabName;
-    setGoogleFormStatus("Google Sheet sync saved.", false);
+    setGoogleFormStatus("Script sync saved.", false);
   }
 
   function clearGoogleFormSync() {
@@ -345,12 +345,12 @@
       delete config.googleSheetUrl;
       delete config.googleSheetTab;
     }
-    setGoogleFormStatus("Google Sheet sync cleared.", false);
+    setGoogleFormStatus("Script sync cleared.", false);
   }
 
   function syncToGoogleForm() {
-    if (!config || !(config.googleFormUrl || config.googleSheetUrl)) {
-      setModalStatus("Add both the script URL and sheet link in the sync panel first.", true);
+    if (!config || !config.googleFormUrl) {
+      setModalStatus("Add the script URL in the sync panel first.", true);
       return;
     }
 
@@ -362,11 +362,11 @@
     try {
       const payload = collectData();
       const scriptUrl = (config.googleFormUrl || "").trim();
-      const sheetUrl = (config.googleSheetUrl || "").trim();
+      const sheetUrl = (config.googleSheetUrl || $("googleSheetUrl").value || "").trim();
       const sheetTabName = (config.googleSheetTab || $("sheetTabName").value || "Sheet1").trim();
 
-      if (!scriptUrl || !sheetUrl) {
-        setModalStatus("Add both the Apps Script URL and the shared sheet link before syncing.", true);
+      if (!scriptUrl) {
+        setModalStatus("Add the Apps Script URL before syncing.", true);
         return;
       }
 
@@ -376,11 +376,11 @@
         createdAt: payload.createdAt,
         data: payload.data,
         row: Object.values(payload.data),
-        sheetUrl,
+        sheetUrl: sheetUrl || "",
         sheetTab: sheetTabName
       });
 
-      setModalStatus("Sending scouting data to Google Sheet...", false, true);
+      setModalStatus("Sending scouting data to the script...", false, true);
 
       fetch(scriptUrl, {
         method: "POST",
@@ -400,28 +400,28 @@
         }
 
         if (!res.ok) {
-          throw new Error(responseText || "Google Sheet request failed.");
+          throw new Error(responseText || "Script request failed.");
         }
 
         if (parsed && parsed.ok === false) {
-          throw new Error(parsed.error || "Google Sheet request rejected by the backend.");
+          throw new Error(parsed.error || "Script request rejected by the backend.");
         }
 
-        setModalStatus("Scouting data sent to Google Sheet successfully.", false, true);
+        setModalStatus("Scouting data sent successfully.", false, true);
       }).catch((err) => {
-        const raw = err && err.message ? err.message : "Could not sync to Google Sheet.";
+        const raw = err && err.message ? err.message : "Could not sync to the script.";
         const fallbackCsv = downloadCsvFallback(payload);
         const detailed = getSyncFailureDetails(scriptUrl, raw);
         setModalStatus(`${detailed} Manual backup downloaded as CSV so you can import it into Google Sheets.`, true);
-        console.warn("Google Sheet sync failed. CSV fallback created.", { raw, fallbackCsv, scriptUrl, sheetUrl, sheetTabName });
+        console.warn("Script sync failed. CSV fallback created.", { raw, fallbackCsv, scriptUrl, sheetUrl, sheetTabName });
       });
     } catch (err) {
-      const raw = err && err.message ? err.message : "Could not sync to Google Sheet.";
+      const raw = err && err.message ? err.message : "Could not sync to the script.";
       const payload = collectData();
       const fallbackCsv = downloadCsvFallback(payload);
       const detailed = getSyncFailureDetails((config && config.googleFormUrl) || "", raw);
       setModalStatus(`${detailed} Manual backup downloaded as CSV so you can import it into Google Sheets.`, true);
-      console.warn("Google Sheet sync exception. CSV fallback created.", { raw, fallbackCsv, config });
+      console.warn("Script sync exception. CSV fallback created.", { raw, fallbackCsv, config });
     }
   }
 
@@ -507,13 +507,13 @@
     $("managerStatus").textContent = "Configuration loaded. You can edit, replace, or download this JSON.";
     $("managerStatus").className = "status ok";
     setStatus("Configuration loaded. Fill in the fields, then generate a QR code.");
-    $("googleSheetUrl").value = config.googleSheetUrl || config.googleFormUrl || "";
+    $("googleSheetUrl").value = config.googleSheetUrl || "";
     $("sheetTabName").value = config.googleSheetTab || "Sheet1";
     $("googleFormUrl").value = config.googleFormUrl || "";
-    if (config.googleFormUrl || config.googleSheetUrl) {
-      setGoogleFormStatus("Google Sheet sync loaded.", false);
+    if (config.googleFormUrl) {
+      setGoogleFormStatus("Script sync loaded.", false);
     } else {
-      setGoogleFormStatus("No Google Sheet sync configured.", false);
+      setGoogleFormStatus("No script sync configured.", false);
     }
   }
 
