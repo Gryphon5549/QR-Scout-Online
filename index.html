@@ -204,15 +204,15 @@
     <p>Paste the deployed Google Apps Script URL. The script will receive the JSON payload and write the data to the destination sheet directly.</p>
     <div class="sync-grid">
       <div class="field">
-        <label for="googleFormUrl">Google Apps Script Web App URL</label>
-        <input id="googleFormUrl" type="url" placeholder="https://script.google.com/macros/s/.../exec">
+        <label for="googleFormUrl">Backend URL</label>
+        <input id="googleFormUrl" type="url" placeholder="http://localhost:3001/api/sync-sheet">
       </div>
       <div class="field">
         <label for="sheetTabName">Tab name (optional)</label>
         <input id="sheetTabName" type="text" placeholder="Scouting or leave blank for Sheet1">
       </div>
     </div>
-    <div class="sync-help">The spreadsheet target is fixed in the Google Apps Script backend. The website only needs the script URL. Open the site through GitHub Pages or localhost, not as a local file.</div>
+    <div class="sync-help">This version uses a lightweight backend instead of Google Apps Script. The site posts to a backend API, and the backend writes the row to Google Sheets. Open the site through GitHub Pages or localhost, not as a local file.</div>
     <div class="sync-actions">
       <button id="applyGoogleFormBtn" type="button" class="primary">Save Script sync</button>
       <button id="clearGoogleFormBtn" type="button">Clear sync</button>

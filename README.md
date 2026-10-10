@@ -4,53 +4,69 @@ This project is the simplified Team 2549 scouting workflow.
 
 ## New architecture
 
-- Frontend: GitHub Pages
-- Backend: Google Apps Script Web App
-- Data destination: Google Sheet
+- Frontend: GitHub Pages or localhost
+- Backend: lightweight Node/Express API
+- Data destination: Google Sheets via Google Sheets API with a service account
 
 This is the final flow:
 
-1. The website is served from GitHub Pages.
+1. The website is served from GitHub Pages or localhost.
 2. The user fills out a scouting form.
-3. The browser sends a POST request to the Apps Script URL.
-4. The script extracts the spreadsheet ID from the shared Google Sheet link.
-5. The script appends the row to the target tab.
+3. The browser sends a POST request to the backend API URL.
+4. The backend authenticates to Google Sheets with a service account.
+5. The backend appends the row to the target sheet/tab.
+
+This avoids Google Apps Script and removes the browser-side fetch issues caused by static-site restrictions.
 
 ## Setup steps
 
 ### 1) Host the website
-Push this repo to GitHub and enable GitHub Pages.
+Push this repo to GitHub and enable GitHub Pages, or run the page locally with a local server.
 
-### 2) Create the Google Apps Script backend
-Open Google Apps Script, create a new project, and paste in the code from `apps-script/append-scouting-to-sheet.gs`.
+### 2) Create the Google Cloud service account
+1. Open Google Cloud Console.
+2. Create a new project or use an existing project.
+3. Enable the Google Sheets API.
+4. Create a service account.
+5. Create a private key JSON file.
+6. Share the target Google Sheet with the service account email address as an Editor.
 
-Use this script and deploy it as a Web App:
+### 3) Configure the backend
+Copy `.env.example` to `.env` and fill in the values:
 
-- Execute as: Me
-- Who has access: Anyone
+```env
+PORT=3001
+GOOGLE_SHEET_ID=your_sheet_id_here
+GOOGLE_SERVICE_ACCOUNT_EMAIL=your-service-account@your-project.iam.gserviceaccount.com
+GOOGLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+SHEET_NAME=Scouting
+```
 
-Copy the deployed URL. It should end with `/exec`.
+Then install dependencies:
 
-### 3) Share the Google Sheet
-Create a sheet and share it with Anyone with the link.
+```bash
+npm install
+```
 
-Copy the share link.
+Then start the server:
+
+```bash
+npm start
+```
 
 ### 4) Use the website
-Open the live GitHub Pages site.
+Open the site over HTTP, not as a file path.
 
-In the sync panel, enter:
+Use the backend URL in the sync panel:
 
-- Apps Script Web App URL
-- Shared Google Sheet link
-- Optional tab name like `Scouting` or leave blank for `Sheet1`
+- http://localhost:3001/api/sync-sheet
 
-Then click Save Sheet sync.
+When deployed, use your hosted backend URL instead.
 
 ### 5) Test one real sync
 Fill out a form, click Commit, and then click Sync to Sheet.
 
-If the script works, a new row should appear in the Google Sheet.
+If the backend works, a new row should appear in the target Google Sheet.
 
 ## Important
 
@@ -58,11 +74,12 @@ Do not open the site as a local HTML file. The browser fetch will fail from a fi
 
 Always use:
 
-- http://localhost:8000 while testing locally, or
-- the GitHub Pages live URL when the site is published
+- http://localhost:8000 for the site frontend, and
+- http://localhost:3001 for the backend API while testing locally
 
 ## Important files
 
 - `index.html` — frontend page and UI
 - `assets/js/app.js` — form logic and sync logic
-- `apps-script/append-scouting-to-sheet.gs` — backend Google Apps Script
+- `server.js` — Express API backend
+- `.env.example` — backend environment variables
