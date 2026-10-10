@@ -29,9 +29,9 @@
     <div class="page-shell">
       <div class="hero panel">
         <div class="hero-copy">
-          <div class="eyebrow">Team 2549 • Scout smarter</div>
-          <h2>Turn match notes into a <span>portable QR entry</span>.</h2>
-          <p>QR Scout helps Team 2549 build custom scouting forms, capture match data in the moment, and generate QR codes that are easy to scan, store, and share.</p>
+          <div class="eyebrow">Team 2549 • Match scouting made easier</div>
+          <h2>Capture every match with a <span>fast QR scouting workflow</span>.</h2>
+          <p>QR Scout helps Team 2549 build custom match forms, collect scouting data on the fly, and send each entry straight to Google Sheets with a single sync.</p>
         </div>
         <div class="hero-actions">
           <button type="button" class="primary" data-page="scoutingPage">Open scouting form</button>
@@ -39,16 +39,16 @@
         </div>
         <div class="mini-stats" aria-label="Quick facts">
           <div class="mini-stat">
-            <strong>JSON</strong>
-            <span>config-driven forms</span>
+            <strong>Fast</strong>
+            <span>match-ready data entry</span>
           </div>
           <div class="mini-stat">
             <strong>QR</strong>
-            <span>fast data sharing</span>
+            <span>portable match records</span>
           </div>
           <div class="mini-stat">
-            <strong>Local</strong>
-            <span>runs in-browser</span>
+            <strong>Sheets</strong>
+            <span>live sync to Google</span>
           </div>
         </div>
       </div>
@@ -56,29 +56,29 @@
       <div class="feature-grid">
         <article class="info-card">
           <div class="card-icon">📋</div>
-          <h3>Custom scouting forms</h3>
-          <p>Load a configuration file to instantly generate the exact match form your team needs, with more control than static paper sheets.</p>
+          <h3>Built for match scouting</h3>
+          <p>Load a scouting config and generate the exact form your team needs for drive team, pit-side, or live match notes.</p>
         </article>
         <article class="info-card">
           <div class="card-icon">⚙️</div>
-          <h3>Built for real matches</h3>
+          <h3>Fast and flexible</h3>
           <ul>
             <li>Boolean checks</li>
             <li>Counter fields</li>
             <li>Range sliders</li>
-            <li>Dropdowns and notes</li>
+            <li>One-click sheet sync</li>
           </ul>
         </article>
         <article class="info-card">
           <div class="card-icon">📲</div>
-          <h3>Generate and share</h3>
-          <p>Once the form is filled, commit the entry and create a QR code. Scan it later to retrieve the same match data without retyping anything.</p>
+          <h3>QR-first workflow</h3>
+          <p>Commit the entry, generate a QR code, and keep a portable copy of the data without retyping it later.</p>
         </article>
       </div>
 
       <div class="callout">
-        <h3>Why teams use it</h3>
-        <p>QR Scout is designed to keep scouting quick, repeatable, and easy to carry between matches. Whether you are testing a new scouting sheet or supporting a fast live pit-side workflow, the JSON format keeps your process flexible.</p>
+        <h3>Why Team 2549 uses it</h3>
+        <p>QR Scout keeps scouting quick, consistent, and easy to manage during a busy event. It is built for rapid match capture, clean data collection, and simple Google Sheet reporting.</p>
       </div>
     </div>
   </section>
@@ -121,7 +121,7 @@
         <article class="step-card">
           <div class="step-number">5</div>
           <h3>Sync to Google Sheet</h3>
-          <p>Open the Google Sheet sync panel in the scouting page, paste your Google Apps Script web app URL, and click “Save Sheet sync.” After that, select “Sync to Form” from the commit modal and the app sends the row directly to the sheet.</p>
+          <p>Open the Google Sheet sync panel in the scouting page, paste your Google Apps Script web app URL, and click “Save Sheet sync.” After that, select “Sync to Sheet” from the commit modal and the app sends the row directly to the sheet.</p>
         </article>
       </div>
 
@@ -231,8 +231,8 @@
         </button>
         <button id="syncChoiceBtn" type="button" class="choice-button">
           <span class="choice-icon">↻</span>
-          <span>Sync to Form</span>
-          <small>Not implemented yet</small>
+          <span>Sync to Sheet</span>
+          <small>Send this entry to Google Sheets</small>
         </button>
       </div>
       <div id="modalStatus" class="status hidden"></div>

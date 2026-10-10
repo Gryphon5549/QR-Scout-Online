@@ -49,23 +49,6 @@
     ]
   };
 
-  function buildAutoGoogleFormMap(startEntryValue = "entry.1") {
-    const orderedCodes = [];
-    config.sections.forEach((section) => {
-      (section.fields || []).forEach((field) => {
-        if (field && field.code) orderedCodes.push(field.code);
-      });
-    });
-
-    const match = String(startEntryValue || "entry.1").match(/(\d+)/);
-    const startIndex = match ? Number(match[1]) : 1;
-    const map = {};
-    orderedCodes.forEach((code, index) => {
-      map[code] = `entry.${startIndex + index}`;
-    });
-    return map;
-  }
-
   function safeId(value) {
     return "field_" + String(value || "unknown").replace(/[^a-zA-Z0-9_-]/g, "_");
   }
@@ -458,9 +441,7 @@
     $("googleSheetUrl").value = config.googleSheetUrl || config.googleFormUrl || "";
     $("sheetTabName").value = config.googleSheetTab || "Sheet1";
     $("googleFormUrl").value = config.googleFormUrl || "";
-    $("googleFormMap").value = config.googleFormMap ? JSON.stringify(config.googleFormMap, null, 2) : "";
-    $("googleFormStartEntry").value = config.googleFormStartEntry || "entry.1";
-    if (config.googleFormUrl || config.googleSheetUrl || config.googleFormMap) {
+    if (config.googleFormUrl || config.googleSheetUrl) {
       setGoogleFormStatus("Google Sheet sync loaded.", false);
     } else {
       setGoogleFormStatus("No Google Sheet sync configured.", false);
