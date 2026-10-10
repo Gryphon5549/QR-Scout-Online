@@ -245,6 +245,54 @@
     return window.location.protocol === "file:";
   }
 
+  function getSyncFailureDetails(scriptUrl, reasonText) {
+    const hints = [];
+    if (isFileProtocol()) {
+      hints.push("Open the site over localhost or GitHub Pages instead of a file path.");
+    }
+    if (!scriptUrl) {
+      hints.push("Paste the deployed Apps Script Web App URL, not the Google Sheet URL.");
+    } else {
+      try {
+        const parsed = new URL(scriptUrl);
+        if (!/script\.google\.com\/macros\//.test(parsed.href)) {
+          hints.push("Use the Apps Script Web App URL that ends in /exec.");
+        }
+      } catch (err) {
+        hints.push("The Apps Script URL is not valid. Copy the full Web App URL.");
+      }
+    }
+    if (location.protocol === "https:" && /github\.io/i.test(location.hostname)) {
+      hints.push("GitHub Pages is allowed, but the Apps Script deployment must be set to Anyone.");
+    }
+    if (!hints.length) {
+      hints.push("Check that the Apps Script is deployed as a Web App and that it is accessible to Anyone.");
+    }
+    return `${reasonText} ${hints.join(" ")}`;
+  }
+
+  function downloadCsvFallback(payload) {
+    const rows = [];
+    const keys = Object.keys(payload.data || {});
+    rows.push(["field", "value"].join(","));
+    keys.forEach((key) => {
+      const value = payload.data[key];
+      const safeValue = String(value ?? "").replace(/"/g, '""');
+      rows.push([`"${key}"`, `"${safeValue}"`].join(","));
+    });
+    const csv = rows.join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `qr-scout-fallback-${Date.now()}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    return csv;
+  }
+
   function saveGoogleFormSync() {
     if (!config) {
       setGoogleFormStatus("Load a scouting configuration before saving a sync endpoint.", true);
@@ -319,40 +367,46 @@
         return;
       }
 
-      const response = fetch(scriptUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          title: payload.title,
-          teamNumber: payload.teamNumber,
-          createdAt: payload.createdAt,
-          data: payload.data,
-          row: Object.values(payload.data),
-          sheetUrl,
-          sheetTab: sheetTabName
-        })
+      const body = JSON.stringify({
+        title: payload.title,
+        teamNumber: payload.teamNumber,
+        createdAt: payload.createdAt,
+        data: payload.data,
+        row: Object.values(payload.data),
+        sheetUrl,
+        sheetTab: sheetTabName
       });
 
       setModalStatus("Sending scouting data to Google Sheet...", false, true);
-      response.then(async (res) => {
+
+      fetch(scriptUrl, {
+        method: "POST",
+        mode: "cors",
+        cache: "no-store",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body
+      }).then(async (res) => {
         const text = await res.text();
         if (!res.ok) {
           throw new Error(text || "Google Sheet request failed.");
         }
         setModalStatus("Scouting data sent to Google Sheet successfully.", false, true);
       }).catch((err) => {
-        const message = err && err.message ? err.message : "Could not sync to Google Sheet.";
-        setModalStatus(message.includes("Failed to fetch") || message.includes("NetworkError")
-          ? "Fetch failed. Check the Apps Script URL and deploy it as a Web App. Then open the site over localhost or GitHub Pages."
-          : message, true);
+        const raw = err && err.message ? err.message : "Could not sync to Google Sheet.";
+        const fallbackCsv = downloadCsvFallback(payload);
+        const detailed = getSyncFailureDetails(scriptUrl, raw);
+        setModalStatus(`${detailed} Manual backup downloaded as CSV so you can import it into Google Sheets.`, true);
+        console.warn("Google Sheet sync failed. CSV fallback created.", { raw, fallbackCsv, scriptUrl, sheetUrl, sheetTabName });
       });
     } catch (err) {
-      const message = err && err.message ? err.message : "Could not sync to Google Sheet.";
-      setModalStatus(message.includes("Failed to fetch") || message.includes("NetworkError")
-        ? "Fetch failed. Check the Apps Script URL and deploy it as a Web App. Then open the site over localhost or GitHub Pages."
-        : message, true);
+      const raw = err && err.message ? err.message : "Could not sync to Google Sheet.";
+      const payload = collectData();
+      const fallbackCsv = downloadCsvFallback(payload);
+      const detailed = getSyncFailureDetails((config && config.googleFormUrl) || "", raw);
+      setModalStatus(`${detailed} Manual backup downloaded as CSV so you can import it into Google Sheets.`, true);
+      console.warn("Google Sheet sync exception. CSV fallback created.", { raw, fallbackCsv, config });
     }
   }
 
