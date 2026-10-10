@@ -1,5 +1,6 @@
-(() => {
+﻿(() => {
   const $ = (id) => document.getElementById(id);
+  const STORAGE_KEY = "qrscoutSavedState";
   let config = null;
   let lastPayload = "";
 
@@ -9,48 +10,103 @@
     teamNumber: 2549,
     delimiter: "\\t",
     sections: [
-      { name: "Prematch", fields: [
-        { title: "Scouter Initials", description: "Enter the initials of the scouter.", type: "text", required: true, code: "scouter", defaultValue: "" },
-        { title: "Match Number", description: "Select the match number.", type: "number", required: true, code: "matchNumber", defaultValue: 1 },
-        { title: "Robot number", description: "Enter the robot number you're scouting.", type: "text", required: true, code: "robot", defaultValue: "" },
-        { title: "Starting Position", type: "select", required: true, code: "startPos", defaultValue: "", choices: { B1:"Blue 1", B2:"Blue 2", B3:"Blue 3", R1:"Red 1", R2:"Red 2", R3:"Red 3" } },
-        { title: "No Show", type: "boolean", required: false, code: "noShow", defaultValue: false }
-      ]},
-      { name: "Autonomous", fields: [
-        { title: "Had auto?", type: "boolean", code: "Auto", defaultValue: false },
-        { title: "Fuel Scored in Auto?", type: "counter", code: "autoFuelScored", defaultValue: 0, min: 0, step: 3 },
-        { title: "Fuel Missed in Auto?", type: "counter", code: "autoFuelMissed", defaultValue: 0, min: 0, step: 1 },
-        { title: "Climbed in auto?", type: "boolean", code: "auClimb", defaultValue: false },
-        { title: "Auto effectiveness", type: "range", code: "autoEff", defaultValue: 4, min: 1, max: 7, step: 1 }
-      ]},
-      { name: "Teleop", fields: [
-        { title: "Alliance won auto?", type: "boolean", code: "allianceWonAuto", defaultValue: false },
-        { title: "Fuel Scored in Teleop?", type: "counter", code: "telFuelScored", defaultValue: 0, min: 0, step: 3 },
-        { title: "Fuel Missed in Teleop?", type: "counter", code: "telFuelMissed", defaultValue: 0, min: 0, step: 1 },
-        { title: "Defended during match?", type: "boolean", code: "robotDefended", defaultValue: false },
-        { title: "Passed during match?", type: "boolean", code: "pass", defaultValue: false },
-        { title: "Bump?", type: "boolean", code: "bump", defaultValue: false },
-        { title: "Trench?", type: "boolean", code: "trench", defaultValue: false },
-        { title: "Stuck on fuel during match?", type: "boolean", code: "fuelStuck", defaultValue: false },
-        { title: "Issues", type: "select", required: true, code: "Failures", defaultValue: "No", choices: { No:"Zero issues", Mech:"Mechanical issue", Die:"Died/disconnected", Tip:"Tipped/fell over", Stu:"Stuck for >5-10 seconds", F:"Multiple issues (elaborate in comments)" } }
-      ]},
-      { name: "Endgame/Postmatch", fields: [
-        { title: "Climbed", type: "select", required: true, code: "climbedTel", defaultValue: "No", choices: { No:"No Climb", L1:"Level 1", L2:"Level 2", L3:"Level 3", F:"Failed Climb" } },
-        { title: "Scored How?", type: "select", required: true, code: "scoredHow", defaultValue: "blank", choices: { blank:"(blank)", driving:"While driving", stationary:"While stationary", both:"Both", none:"No scoring" } },
-        { title: "Scoring Accuracy", type: "range", code: "scoringEff", defaultValue: 4, min: 1, max: 7, step: 1 },
-        { title: "Scoring Speed", type: "range", code: "scoringSped", defaultValue: 4, min: 1, max: 7, step: 1 },
-        { title: "Intake Effectiveness", type: "range", code: "intakeEff", defaultValue: 4, min: 1, max: 7, step: 1 },
-        { title: "Driving skill", type: "range", code: "drivSkill", defaultValue: 4, min: 1, max: 7, step: 1 },
-        { title: "Passing Skill", type: "range", code: "passSkill", defaultValue: 0, min: 1, max: 7, step: 1 },
-        { title: "Defense Skill", type: "range", code: "defSkill", defaultValue: 0, min: 1, max: 7, step: 1 },
-        { title: "Yellow/Red Card", type: "select", required: true, code: "yc", defaultValue: "No Card", choices: { "No Card":"No Card", Yellow:"Yellow Card", Red:"Red Card" } },
-        { title: "Comments", type: "text", code: "co", defaultValue: "" }
-      ]}
+      {
+        name: "Prematch",
+        fields: [
+          { title: "Scouter Initials", description: "Enter the initials of the scouter.", type: "text", required: true, code: "scouter", defaultValue: "" },
+          { title: "Match Number", description: "Select the match number.", type: "number", required: true, code: "matchNumber", defaultValue: 1 },
+          { title: "Robot number", description: "Enter the robot number you're scouting.", type: "text", required: true, code: "robot", defaultValue: "" },
+          { title: "Starting Position", type: "select", required: true, code: "startPos", defaultValue: "", choices: { B1:"Blue 1", B2:"Blue 2", B3:"Blue 3", R1:"Red 1", R2:"Red 2", R3:"Red 3" } },
+          { title: "No Show", type: "boolean", required: false, code: "noShow", defaultValue: false }
+        ]
+      },
+      {
+        name: "Autonomous",
+        fields: [
+          { title: "Had auto?", type: "boolean", code: "Auto", defaultValue: false },
+          { title: "Fuel Scored in Auto?", type: "counter", code: "autoFuelScored", defaultValue: 0, min: 0, step: 3 },
+          { title: "Fuel Missed in Auto?", type: "counter", code: "autoFuelMissed", defaultValue: 0, min: 0, step: 1 },
+          { title: "Climbed in auto?", type: "boolean", code: "auClimb", defaultValue: false },
+          { title: "Auto effectiveness", type: "range", code: "autoEff", defaultValue: 4, min: 1, max: 7, step: 1 }
+        ]
+      },
+      {
+        name: "Teleop",
+        fields: [
+          { title: "Alliance won auto?", type: "boolean", code: "allianceWonAuto", defaultValue: false },
+          { title: "Fuel Scored in Teleop?", type: "counter", code: "telFuelScored", defaultValue: 0, min: 0, step: 3 },
+          { title: "Fuel Missed in Teleop?", type: "counter", code: "telFuelMissed", defaultValue: 0, min: 0, step: 1 },
+          { title: "Defended during match?", type: "boolean", code: "robotDefended", defaultValue: false },
+          { title: "Passed during match?", type: "boolean", code: "pass", defaultValue: false },
+          { title: "Bump?", type: "boolean", code: "bump", defaultValue: false },
+          { title: "Trench?", type: "boolean", code: "trench", defaultValue: false },
+          { title: "Stuck on fuel during match?", type: "boolean", code: "fuelStuck", defaultValue: false },
+          { title: "Issues", type: "select", required: true, code: "Failures", defaultValue: "No", choices: { No:"Zero issues", Mech:"Mechanical issue", Die:"Died/disconnected", Tip:"Tipped/fell over", Stu:"Stuck for >5-10 seconds", F:"Multiple issues (elaborate in comments)" } }
+        ]
+      },
+      {
+        name: "Endgame/Postmatch",
+        fields: [
+          { title: "Climbed", type: "select", required: true, code: "climbedTel", defaultValue: "No", choices: { No:"No Climb", L1:"Level 1", L2:"Level 2", L3:"Level 3", F:"Failed Climb" } },
+          { title: "Scored How?", type: "select", required: true, code: "scoredHow", defaultValue: "blank", choices: { blank:"(blank)", driving:"While driving", stationary:"While stationary", both:"Both", none:"No scoring" } },
+          { title: "Scoring Accuracy", type: "range", code: "scoringEff", defaultValue: 4, min: 1, max: 7, step: 1 },
+          { title: "Scoring Speed", type: "range", code: "scoringSped", defaultValue: 4, min: 1, max: 7, step: 1 },
+          { title: "Intake Effectiveness", type: "range", code: "intakeEff", defaultValue: 4, min: 1, max: 7, step: 1 },
+          { title: "Driving skill", type: "range", code: "drivSkill", defaultValue: 4, min: 1, max: 7, step: 1 },
+          { title: "Passing Skill", type: "range", code: "passSkill", defaultValue: 1, min: 1, max: 7, step: 1 },
+          { title: "Defense Skill", type: "range", code: "defSkill", defaultValue: 1, min: 1, max: 7, step: 1 },
+          { title: "Yellow/Red Card", type: "select", required: true, code: "yc", defaultValue: "No Card", choices: { "No Card":"No Card", Yellow:"Yellow Card", Red:"Red Card" } },
+          { title: "Comments", type: "text", code: "co", defaultValue: "" }
+        ]
+      }
     ]
   };
 
   function safeId(value) {
     return "field_" + String(value || "unknown").replace(/[^a-zA-Z0-9_-]/g, "_");
+  }
+
+  function getSavedState() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch (err) {
+      return null;
+    }
+  }
+
+  function clearSavedState() {
+    localStorage.removeItem(STORAGE_KEY);
+  }
+
+  function saveCurrentState() {
+    if (!config || !$("formArea")) return;
+    const formState = {};
+    $("formArea").querySelectorAll("[data-field-code]").forEach((control) => {
+      const code = control.dataset.fieldCode;
+      const type = control.dataset.fieldType;
+      let value;
+      if (type === "boolean") value = control.checked;
+      else if (type === "number" || type === "counter" || type === "range") value = control.value === "" ? "" : Number(control.value);
+      else value = control.value;
+      formState[code] = value;
+    });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ config, form: formState }));
+  }
+
+  function applySavedValues() {
+    const saved = getSavedState();
+    if (!saved || !saved.form) return;
+    $("formArea").querySelectorAll("[data-field-code]").forEach((control) => {
+      const code = control.dataset.fieldCode;
+      const value = saved.form[code];
+      if (value === undefined) return;
+      const type = control.dataset.fieldType;
+      if (type === "boolean") control.checked = Boolean(value);
+      else if (type === "range" || type === "counter" || type === "number") control.value = value ?? "";
+      else if (type === "select") control.value = value ?? "";
+      else control.value = value ?? "";
+    });
   }
 
   function makeField(field) {
@@ -177,6 +233,7 @@
       (section.fields || []).forEach((field) => sectionEl.appendChild(makeField(field)));
       area.appendChild(sectionEl);
     });
+    applySavedValues();
     $("configStatus").textContent = `${config.title || "Configuration"} loaded`;
   }
 
@@ -309,6 +366,7 @@
       delete config.googleFormUrl;
       delete config.googleSheetTab;
       setGoogleFormStatus("Script sync cleared.", false);
+      saveCurrentState();
       return;
     }
 
@@ -324,6 +382,7 @@
     $("googleFormUrl").value = formUrl;
     $("sheetTabName").value = sheetTabName;
     setGoogleFormStatus("Script sync saved.", false);
+    saveCurrentState();
   }
 
   function clearGoogleFormSync() {
@@ -334,6 +393,7 @@
       delete config.googleSheetTab;
     }
     setGoogleFormStatus("Script sync cleared.", false);
+    saveCurrentState();
   }
 
   function syncToGoogleForm() {
@@ -455,39 +515,17 @@
 
   function resetFields() {
     if (!config) return;
+    clearSavedState();
     renderForm();
     lastPayload = "";
     hideModal();
   }
 
-  function showPage(pageId) {
-    document.querySelectorAll(".page").forEach((page) => page.classList.toggle("active", page.id === pageId));
-    document.querySelectorAll(".tab-btn").forEach((tab) => tab.classList.toggle("active", tab.dataset.page === pageId));
-    if (pageId !== "scoutingPage") {
-      document.body.classList.remove("config-loaded");
-    } else if (config) {
-      document.body.classList.add("config-loaded");
-    }
-  }
-
-  document.querySelectorAll(".tab-btn").forEach((tab) => {
-    tab.addEventListener("click", () => showPage(tab.dataset.page));
-  });
-
-  document.querySelectorAll("[data-page]").forEach((button) => {
-    button.addEventListener("click", () => {
-      const target = button.dataset.page;
-      if (target) showPage(target);
-    });
-  });
-
   function applyConfig(obj) {
     if (!obj || !Array.isArray(obj.sections)) throw new Error("This JSON does not contain a sections array.");
     config = obj;
-    showPage("scoutingPage");
-    $("uploadCard").style.display = "none";
-    $("scoutingFormPanel").style.display = "block";
-    document.body.classList.add("config-loaded");
+    $("welcomeSection").classList.add("hidden");
+    $("scoutingPage").classList.remove("hidden");
     renderForm();
     $("jsonEditor").value = JSON.stringify(config, null, 2);
     $("managerStatus").textContent = "Configuration loaded. You can edit, replace, or download this JSON.";
@@ -498,8 +536,24 @@
     if (config.googleFormUrl) {
       setGoogleFormStatus("Script sync loaded.", false);
     } else {
-      setGoogleFormStatus("No script sync configured.", false);
+      setGoogleFormStatus("No sync configured.", false);
     }
+    saveCurrentState();
+  }
+
+  function restoreSavedConfiguration() {
+    const saved = getSavedState();
+    if (!saved || !saved.config || !Array.isArray(saved.config.sections)) return;
+    config = saved.config;
+    $("welcomeSection").classList.add("hidden");
+    $("scoutingPage").classList.remove("hidden");
+    renderForm();
+    $("jsonEditor").value = JSON.stringify(config, null, 2);
+    $("managerStatus").textContent = "Saved scouting data restored.";
+    $("managerStatus").className = "status ok";
+    $("sheetTabName").value = config.googleSheetTab || "Sheet1";
+    $("googleFormUrl").value = config.googleFormUrl || "";
+    setStatus("Saved progress restored.");
   }
 
   $("configFile").addEventListener("change", async (e) => {
@@ -526,7 +580,7 @@
   $("toggleConfigManagerBtn").addEventListener("click", () => {
     const manager = $("configManager");
     const isHidden = manager.classList.toggle("collapsed");
-    $("toggleConfigManagerBtn").textContent = isHidden ? "Edit / Manage JSON" : "Hide JSON Manager";
+    $("toggleConfigManagerBtn").textContent = isHidden ? "Edit JSON" : "Hide JSON";
     if (!isHidden) manager.scrollIntoView({ behavior: "smooth", block: "start" });
   });
   $("closeModalBtn").addEventListener("click", hideModal);
@@ -544,4 +598,51 @@
     if (!collapsed) panel.scrollIntoView({ behavior: "smooth", block: "start" });
   });
   $("modalDownloadBtn").addEventListener("click", downloadQr);
+
+  $("formArea").addEventListener("input", saveCurrentState);
+  $("formArea").addEventListener("change", saveCurrentState);
+
+  $("applyJsonBtn").addEventListener("click", () => {
+    try {
+      const parsed = JSON.parse($("jsonEditor").value);
+      applyConfig(parsed);
+    } catch (err) {
+      $("managerStatus").textContent = "Invalid JSON. Fix the syntax and try again.";
+      $("managerStatus").className = "status error";
+    }
+  });
+
+  $("uploadNewJsonBtn").addEventListener("click", () => {
+    $("managerJsonFile").click();
+  });
+
+  $("managerJsonFile").addEventListener("change", async (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    try {
+      const parsed = JSON.parse(await file.text());
+      applyConfig(parsed);
+    } catch (err) {
+      $("managerStatus").textContent = "Could not load the JSON file.";
+      $("managerStatus").className = "status error";
+    }
+  });
+
+  $("downloadJsonBtn").addEventListener("click", () => {
+    if (!config) return;
+    const blob = new Blob([JSON.stringify(config, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "scouting-config.json";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  });
+
+  const saved = getSavedState();
+  if (saved && saved.config && Array.isArray(saved.config.sections)) {
+    restoreSavedConfiguration();
+  }
 })();
