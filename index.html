@@ -88,62 +88,62 @@
       <div class="hero panel">
         <div class="hero-copy">
           <div class="eyebrow">Team 2549 • How it works</div>
-          <h2>Build a scouting form in a few quick steps.</h2>
-          <p>Use a JSON scouting configuration to define your fields, load it locally in the browser, and generate a QR code from the data you collect during competition.</p>
+          <h2>Use QR Scout in five quick steps.</h2>
+          <p>Host the site on GitHub Pages, connect it to a Google Apps Script backend, and send each scouting entry directly to a Google Sheet.</p>
         </div>
       </div>
 
       <div class="how-grid">
         <article class="step-card">
           <div class="step-number">1</div>
-          <h3>Load your configuration</h3>
-          <p>Choose a JSON file or use the sample scouting form to start with an example team layout. The app validates the structure and immediately builds your form in the browser.</p>
+          <h3>Open the scouting form</h3>
+          <p>Load the sample config or upload your own JSON. The app will build the form instantly in the browser with the fields your team needs.</p>
         </article>
 
         <article class="step-card">
           <div class="step-number">2</div>
-          <h3>Fill in the fields</h3>
-          <p>Enter initials, match number, robot details, and any match metrics you need. Toggle booleans, adjust counters, set ranges, and use dropdowns for standard scouting options.</p>
+          <h3>Fill out the match</h3>
+          <p>Enter match data, robot info, booleans, counters, dropdowns, and notes. The layout is built for fast in-match entry without slowing the team down.</p>
         </article>
 
         <article class="step-card">
           <div class="step-number">3</div>
           <h3>Commit the entry</h3>
-          <p>When you are ready, click “Commit” to review your data. From the review modal, you can generate a QR code or send the same record to your sheet.</p>
+          <p>When you are ready, click Commit to review the form. From there you can generate a QR code or send the same record to the Google Sheet.</p>
         </article>
 
         <article class="step-card">
           <div class="step-number">4</div>
-          <h3>Generate or share</h3>
-          <p>Use the QR image for quick sharing or save it as a PNG file. The generated code includes the same JSON data you entered, which makes it easy to scan and reuse later.</p>
+          <h3>Generate the QR code</h3>
+          <p>Use the QR code to save a portable version of the scouting data. This is helpful for backup, sharing, or recovering the entry later.</p>
         </article>
 
         <article class="step-card">
           <div class="step-number">5</div>
-          <h3>Sync to Google Sheet</h3>
-          <p>Open the Google Sheet sync panel in the scouting page, paste your Google Apps Script web app URL, and click “Save Sheet sync.” After that, select “Sync to Sheet” from the commit modal and the app sends the row directly to the sheet.</p>
+          <h3>Sync to Google Sheets</h3>
+          <p>Paste the Apps Script Web App URL and the shared Google Sheet link into the sync panel, then click Save Sheet sync. After that, select Sync to Sheet from the modal and the data is sent to the sheet.</p>
         </article>
       </div>
 
       <div class="tips-box">
-        <h3>How to set up sheet sync</h3>
+        <h3>How to set up the sync</h3>
         <ol>
-          <li>Create a Google Apps Script project tied to your sheet and deploy it as a web app.</li>
-          <li>In the script, accept a JSON POST body and use the row data to append to the active sheet.</li>
-          <li>Paste the deployed web app URL into the sync field on the scouting page.</li>
-          <li>Click “Save Sheet sync,” then use the Commit modal to send the current scouting entry.</li>
-          <li>Every synced row is appended in order, making it easy to track match data without manual entry.</li>
+          <li>Host the website on GitHub Pages or run it locally with a web server.</li>
+          <li>Create a Google Apps Script project and deploy it as a Web App.</li>
+          <li>Set the deployment to “Anyone” so the browser can access it.</li>
+          <li>Paste the deployed Apps Script URL and the shared Google Sheet link into the site.</li>
+          <li>Save the sync settings and test by sending one scouting entry.</li>
         </ol>
       </div>
 
       <div class="tips-box">
         <h3>Helpful tips</h3>
         <ul>
-          <li>Keep field names consistent so your JSON stays easy to read and debug.</li>
-          <li>Use boolean and counter fields for fast pit-side collection during active matches.</li>
-          <li>Use the JSON manager to edit or download the current config without leaving the page.</li>
-          <li>Start with the sample form if you want a good baseline before creating your own team config.</li>
-          <li>For live testing, keep the Apps Script URL saved in the sync panel so one click is all it takes to send data.</li>
+          <li>Always open the site through a web URL like localhost or GitHub Pages instead of a file path.</li>
+          <li>Use a clear tab name like “Scouting” or “Sheet1” if your sheet has multiple tabs.</li>
+          <li>Keep your JSON field names consistent so the sheet rows stay easy to read and analyze.</li>
+          <li>Use the sample config first to test the flow before building a custom team form.</li>
+          <li>Save the sync values once so every future submission is one click away.</li>
         </ul>
       </div>
     </div>
