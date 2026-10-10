@@ -303,46 +303,34 @@
     }
 
     const formUrl = $("googleFormUrl").value.trim();
-    const sheetUrl = $("googleSheetUrl").value.trim();
     const sheetTabName = $("sheetTabName").value.trim() || "Sheet1";
 
-    if (!formUrl && !sheetUrl) {
+    if (!formUrl) {
       delete config.googleFormUrl;
-      delete config.googleSheetUrl;
       delete config.googleSheetTab;
       setGoogleFormStatus("Script sync cleared.", false);
       return;
     }
 
-    if (!formUrl) {
-      setGoogleFormStatus("Add the Google Apps Script URL.", true);
-      return;
-    }
-
     try {
       new URL(formUrl);
-      if (sheetUrl) new URL(sheetUrl);
     } catch (err) {
       setGoogleFormStatus("The script URL is not valid.", true);
       return;
     }
 
     config.googleFormUrl = formUrl;
-    if (sheetUrl) config.googleSheetUrl = sheetUrl;
     config.googleSheetTab = sheetTabName;
     $("googleFormUrl").value = formUrl;
-    $("googleSheetUrl").value = sheetUrl || "";
     $("sheetTabName").value = sheetTabName;
     setGoogleFormStatus("Script sync saved.", false);
   }
 
   function clearGoogleFormSync() {
     $("googleFormUrl").value = "";
-    $("googleSheetUrl").value = "";
     $("sheetTabName").value = "";
     if (config) {
       delete config.googleFormUrl;
-      delete config.googleSheetUrl;
       delete config.googleSheetTab;
     }
     setGoogleFormStatus("Script sync cleared.", false);
@@ -362,7 +350,6 @@
     try {
       const payload = collectData();
       const scriptUrl = (config.googleFormUrl || "").trim();
-      const sheetUrl = (config.googleSheetUrl || $("googleSheetUrl").value || "").trim();
       const sheetTabName = (config.googleSheetTab || $("sheetTabName").value || "Sheet1").trim();
 
       if (!scriptUrl) {
@@ -376,7 +363,6 @@
         createdAt: payload.createdAt,
         data: payload.data,
         row: Object.values(payload.data),
-        sheetUrl: sheetUrl || "",
         sheetTab: sheetTabName
       });
 
@@ -413,7 +399,7 @@
         const fallbackCsv = downloadCsvFallback(payload);
         const detailed = getSyncFailureDetails(scriptUrl, raw);
         setModalStatus(`${detailed} Manual backup downloaded as CSV so you can import it into Google Sheets.`, true);
-        console.warn("Script sync failed. CSV fallback created.", { raw, fallbackCsv, scriptUrl, sheetUrl, sheetTabName });
+        console.warn("Script sync failed. CSV fallback created.", { raw, fallbackCsv, scriptUrl, sheetTabName });
       });
     } catch (err) {
       const raw = err && err.message ? err.message : "Could not sync to the script.";
@@ -507,7 +493,6 @@
     $("managerStatus").textContent = "Configuration loaded. You can edit, replace, or download this JSON.";
     $("managerStatus").className = "status ok";
     setStatus("Configuration loaded. Fill in the fields, then generate a QR code.");
-    $("googleSheetUrl").value = config.googleSheetUrl || "";
     $("sheetTabName").value = config.googleSheetTab || "Sheet1";
     $("googleFormUrl").value = config.googleFormUrl || "";
     if (config.googleFormUrl) {

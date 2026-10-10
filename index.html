@@ -211,12 +211,8 @@
         <label for="sheetTabName">Tab name (optional)</label>
         <input id="sheetTabName" type="text" placeholder="Scouting or leave blank for Sheet1">
       </div>
-      <div class="field" style="display:none;">
-        <label for="googleSheetUrl">Shared Google Sheet link</label>
-        <input id="googleSheetUrl" type="url" placeholder="https://docs.google.com/spreadsheets/d/.../edit?usp=sharing">
-      </div>
     </div>
-    <div class="sync-help">The sheet link is no longer required on the website. The backend script will handle the data destination directly. Open the site through GitHub Pages or localhost, not as a local file.</div>
+    <div class="sync-help">The spreadsheet target is fixed in the Google Apps Script backend. The website only needs the script URL. Open the site through GitHub Pages or localhost, not as a local file.</div>
     <div class="sync-actions">
       <button id="applyGoogleFormBtn" type="button" class="primary">Save Script sync</button>
       <button id="clearGoogleFormBtn" type="button">Clear sync</button>

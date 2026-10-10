@@ -1,3 +1,6 @@
+const FIXED_SPREADSHEET_ID = 'PASTE_YOUR_SPREADSHEET_ID_HERE';
+const DEFAULT_SHEET_NAME = 'Scouting';
+
 function doGet(e) {
   return ContentService
     .createTextOutput(JSON.stringify({
@@ -13,22 +16,23 @@ function doPost(e) {
     const payload = JSON.parse(rawBody || '{}');
     const sheetUrl = String(payload.sheetUrl || '').trim();
     const sheetIdFromPayload = String(payload.sheetId || '').trim();
-    const tabName = String(payload.sheetTab || 'Sheet1').trim() || 'Sheet1';
+    const tabName = String(payload.sheetTab || DEFAULT_SHEET_NAME || 'Sheet1').trim() || 'Sheet1';
     const row = Array.isArray(payload.row)
       ? payload.row
       : Array.isArray(payload.data)
         ? payload.data
         : Object.values(payload.data || {});
 
-    if (!sheetUrl && !sheetIdFromPayload) {
-      throw new Error('Missing sheetUrl in request payload.');
-    }
-
     if (!row.length) {
       throw new Error('Missing row data in request payload.');
     }
 
-    const spreadsheetId = sheetIdFromPayload || extractSheetId(sheetUrl);
+    const spreadsheetId = sheetIdFromPayload || extractSheetId(sheetUrl) || FIXED_SPREADSHEET_ID;
+
+    if (!spreadsheetId || spreadsheetId === 'PASTE_YOUR_SPREADSHEET_ID_HERE') {
+      throw new Error('Set FIXED_SPREADSHEET_ID in the Apps Script file to your Google Sheet ID.');
+    }
+
     const spreadsheet = SpreadsheetApp.openById(spreadsheetId);
     const targetSheet = spreadsheet.getSheetByName(tabName) || spreadsheet.insertSheet(tabName);
 
@@ -55,11 +59,12 @@ function doPost(e) {
 }
 
 function extractSheetId(urlString) {
+  if (!urlString) return null;
   const url = new URL(urlString);
   const matches = url.pathname.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/i);
 
   if (!matches || !matches[1]) {
-    throw new Error('The sheet URL is not a valid Google Sheets link.');
+    return null;
   }
 
   return matches[1];
