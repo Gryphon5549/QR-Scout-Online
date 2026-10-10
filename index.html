@@ -195,10 +195,10 @@
 
   <section class="panel sync-panel collapsed" id="googleFormSyncPanel">
     <h3>Google Sheet Sync</h3>
-    <p>Paste the Google Apps Script URL and the shared Google Sheet link. When you click Sync, the app will send the scouting row to the sheet.</p>
+    <p>Paste the Google Apps Script web app URL and the shared Google Sheet link. This is the only setup needed to send each scouting row to the sheet.</p>
     <div class="sync-grid">
       <div class="field">
-        <label for="googleFormUrl">Google Apps Script URL</label>
+        <label for="googleFormUrl">Google Apps Script Web App URL</label>
         <input id="googleFormUrl" type="url" placeholder="https://script.google.com/macros/s/.../exec">
       </div>
       <div class="field">
@@ -206,20 +206,11 @@
         <input id="googleSheetUrl" type="url" placeholder="https://docs.google.com/spreadsheets/d/.../edit?usp=sharing">
       </div>
       <div class="field">
-        <label for="sheetTabName">Optional tab name</label>
-        <input id="sheetTabName" type="text" placeholder="Scouting (optional)">
-      </div>
-      <div class="field">
-        <label for="googleFormStartEntry">Optional start column</label>
-        <input id="googleFormStartEntry" type="text" value="entry.1" placeholder="entry.1">
-        <div class="sync-help">This is mainly for legacy form mapping only.</div>
-      </div>
-      <div class="field">
-        <label for="googleFormMap">Legacy form mapping JSON</label>
-        <textarea id="googleFormMap" spellcheck="false" placeholder='{"scouter":"entry.123456789","matchNumber":"entry.987654321"}'></textarea>
+        <label for="sheetTabName">Tab name (optional)</label>
+        <input id="sheetTabName" type="text" placeholder="Scouting or leave blank for Sheet1">
       </div>
     </div>
-    <div class="sync-help">Put in the script URL and the shared sheet link. The script can append to the sheet automatically, and the tab name is optional if you want to use the default first sheet.</div>
+    <div class="sync-help">Use the deployed Apps Script URL, not the sheet URL. Open the site through GitHub Pages or localhost, not as a local file.</div>
     <div class="sync-actions">
       <button id="applyGoogleFormBtn" type="button" class="primary">Save Sheet sync</button>
       <button id="clearGoogleFormBtn" type="button">Clear sync</button>

@@ -271,25 +271,9 @@
     const formUrl = $("googleFormUrl").value.trim();
     const sheetUrl = $("googleSheetUrl").value.trim();
     const sheetTabName = $("sheetTabName").value.trim() || "Sheet1";
-    const startEntryValue = $("googleFormStartEntry").value.trim() || "entry.1";
-    let map = {};
-    const rawMap = $("googleFormMap").value.trim();
 
-    if (rawMap) {
-      try {
-        map = JSON.parse(rawMap);
-      } catch (err) {
-        setGoogleFormStatus("Field mapping must be valid JSON.", true);
-        return;
-      }
-    } else {
-      map = buildAutoGoogleFormMap(startEntryValue);
-    }
-
-    if (!formUrl && !sheetUrl && !rawMap) {
+    if (!formUrl && !sheetUrl) {
       delete config.googleFormUrl;
-      delete config.googleFormMap;
-      delete config.googleFormStartEntry;
       delete config.googleSheetUrl;
       delete config.googleSheetTab;
       setGoogleFormStatus("Google Sheet sync cleared.", false);
@@ -312,13 +296,9 @@
     config.googleFormUrl = formUrl;
     config.googleSheetUrl = sheetUrl;
     config.googleSheetTab = sheetTabName;
-    config.googleFormMap = map;
-    config.googleFormStartEntry = startEntryValue;
     $("googleFormUrl").value = formUrl;
     $("googleSheetUrl").value = sheetUrl;
     $("sheetTabName").value = sheetTabName;
-    $("googleFormMap").value = JSON.stringify(map, null, 2);
-    $("googleFormStartEntry").value = startEntryValue;
     setGoogleFormStatus("Google Sheet sync saved.", false);
   }
 
@@ -326,12 +306,8 @@
     $("googleFormUrl").value = "";
     $("googleSheetUrl").value = "";
     $("sheetTabName").value = "";
-    $("googleFormMap").value = "";
-    $("googleFormStartEntry").value = "entry.1";
     if (config) {
       delete config.googleFormUrl;
-      delete config.googleFormMap;
-      delete config.googleFormStartEntry;
       delete config.googleSheetUrl;
       delete config.googleSheetTab;
     }
@@ -345,7 +321,7 @@
     }
 
     if (isFileProtocol()) {
-      setModalStatus("Open the site through a local web server first, then try sync again. Example: python -m http.server 8000", true);
+      setModalStatus("Open the site through GitHub Pages or localhost first, not file://. Example: http://localhost:8000", true);
       return;
     }
 
@@ -354,31 +330,6 @@
       const scriptUrl = (config.googleFormUrl || "").trim();
       const sheetUrl = (config.googleSheetUrl || "").trim();
       const sheetTabName = (config.googleSheetTab || $("sheetTabName").value || "Sheet1").trim();
-      const isGoogleForm = /docs\.google\.com\/forms/i.test(sheetUrl);
-
-      if (isGoogleForm) {
-        let map = config.googleFormMap || {};
-        if (!Object.keys(map).length) {
-          const startEntryValue = (config.googleFormStartEntry || $("googleFormStartEntry").value || "entry.1").trim();
-          map = buildAutoGoogleFormMap(startEntryValue);
-        }
-
-        const googleUrl = new URL(sheetUrl);
-        const params = new URLSearchParams(googleUrl.search);
-        Object.entries(map).forEach(([fieldCode, entryId]) => {
-          const key = String(entryId || "").trim();
-          if (!key) return;
-          const normalizedKey = key.startsWith("entry.") ? key : `entry.${key}`;
-          const rawValue = payload.data[fieldCode];
-          if (rawValue !== undefined && rawValue !== null && rawValue !== "") {
-            params.set(normalizedKey, String(rawValue));
-          }
-        });
-        googleUrl.search = params.toString();
-        setModalStatus("Opening Google Form with synced data...", false, true);
-        window.open(googleUrl.toString(), "_blank", "noopener,noreferrer");
-        return;
-      }
 
       if (!scriptUrl || !sheetUrl) {
         setModalStatus("Add both the Apps Script URL and the shared sheet link before syncing.", true);
@@ -411,13 +362,13 @@
       }).catch((err) => {
         const message = err && err.message ? err.message : "Could not sync to Google Sheet.";
         setModalStatus(message.includes("Failed to fetch") || message.includes("NetworkError")
-          ? "Fetch failed. Check the Apps Script URL, deploy it as a Web App, and open the site over localhost instead of file://."
+          ? "Fetch failed. Check the Apps Script URL and deploy it as a Web App. Then open the site over localhost or GitHub Pages."
           : message, true);
       });
     } catch (err) {
       const message = err && err.message ? err.message : "Could not sync to Google Sheet.";
       setModalStatus(message.includes("Failed to fetch") || message.includes("NetworkError")
-        ? "Fetch failed. Check the Apps Script URL, deploy it as a Web App, and open the site over localhost instead of file://."
+        ? "Fetch failed. Check the Apps Script URL and deploy it as a Web App. Then open the site over localhost or GitHub Pages."
         : message, true);
     }
   }
