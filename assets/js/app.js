@@ -251,25 +251,25 @@
       hints.push("Open the site over localhost or GitHub Pages instead of a file path.");
     }
     if (!scriptUrl) {
-      hints.push("Paste the deployed Apps Script Web App URL.");
+      hints.push("Paste the running backend API URL.");
     } else {
       try {
         const parsed = new URL(scriptUrl);
-        if (!/script\.google\.com\/macros\//.test(parsed.href) || !/\/exec$/.test(parsed.href)) {
-          hints.push("Use the Apps Script Web App URL that ends in /exec.");
+        if (!/^(https?|http):/.test(parsed.href)) {
+          hints.push("Use a real HTTP or HTTPS backend URL.");
         }
       } catch (err) {
-        hints.push("The Apps Script URL is not valid. Copy the full Web App URL.");
+        hints.push("The backend URL is not valid. Copy the full API URL.");
       }
     }
     if (location.protocol === "https:" && /github\.io/i.test(location.hostname)) {
-      hints.push("GitHub Pages is allowed, but the Apps Script deployment must be set to Anyone.");
+      hints.push("GitHub Pages is allowed, but the backend must be reachable over HTTP or HTTPS.");
     }
     if (String(reasonText).toLowerCase().includes("do get") || String(reasonText).toLowerCase().includes("script function not found")) {
-      hints.push("The Apps Script project needs a doGet() function or a valid deployed web app.");
+      hints.push("This is a backend endpoint issue. Confirm the API is running and the URL is correct.");
     }
     if (!hints.length) {
-      hints.push("Check that the Apps Script is deployed as a Web App and that it is accessible to Anyone.");
+      hints.push("Check that the backend is running and serving the API endpoint over HTTP.");
     }
     return `${reasonText} ${hints.join(" ")}`;
   }
@@ -353,7 +353,7 @@
       const sheetTabName = (config.googleSheetTab || $("sheetTabName").value || "Sheet1").trim();
 
       if (!scriptUrl) {
-        setModalStatus("Add the Apps Script URL before syncing.", true);
+        setModalStatus("Add the backend API URL before syncing.", true);
         return;
       }
 
