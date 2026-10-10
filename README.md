@@ -54,7 +54,19 @@ Then start the server:
 npm start
 ```
 
-### 4) Use the website
+### 4) Deploy the frontend and backend
+Use the repo as follows:
+
+- GitHub Pages hosts the frontend in the repo root or the `frontend/` folder.
+- A hosted backend such as Render, Railway, or a small VPS runs the Node API.
+- The frontend saves the backend API URL in the browser and sends full JSON payloads there.
+
+For example:
+
+- Frontend URL: https://your-user.github.io/QR-Scout-Online/
+- Backend URL: https://your-backend-app.onrender.com/api/sync-sheet
+
+### 5) Use the website
 Open the site over HTTP, not as a file path.
 
 Use the backend URL in the sync panel:
@@ -63,7 +75,7 @@ Use the backend URL in the sync panel:
 
 When deployed, use your hosted backend URL instead.
 
-### 5) Test one real sync
+### 6) Test one real sync
 Fill out a form, click Commit, and then click Sync to Sheet.
 
 If the backend works, a new row should appear in the target Google Sheet.
