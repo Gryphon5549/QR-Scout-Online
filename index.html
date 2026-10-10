@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QR Scout — QR Generator</title>
+<link rel="stylesheet" href="assets/css/styles.css">
+
+</head>
+<body>
+<header>
+  <div class="topbar">
+    <div class="brand-block">
+      <div class="logo">2549</div>
+      <div>
+        <h1>QR Scout</h1>
+        <small>Team 2549 scouting</small>
+      </div>
+    </div>
+    <nav class="tabs" aria-label="Main navigation">
+      <button type="button" class="tab-btn active" data-page="homePage">Home</button>
+      <button type="button" class="tab-btn" data-page="scoutingPage">Scouting</button>
+      <button type="button" class="tab-btn" data-page="howToUsePage">How to use</button>
+    </nav>
+  </div>
+</header>
+<main>
+  <section id="homePage" class="page active" aria-label="Home">
+    <div class="page-shell">
+      <div class="hero panel">
+        <div class="hero-copy">
+          <div class="eyebrow">Team 2549 • Scout smarter</div>
+          <h2>Turn match notes into a <span>portable QR entry</span>.</h2>
+          <p>QR Scout helps Team 2549 build custom scouting forms, capture match data in the moment, and generate QR codes that are easy to scan, store, and share.</p>
+        </div>
+        <div class="hero-actions">
+          <button type="button" class="primary" data-page="scoutingPage">Open scouting form</button>
+          <button type="button" data-page="howToUsePage">See how it works</button>
+        </div>
+        <div class="mini-stats" aria-label="Quick facts">
+          <div class="mini-stat">
+            <strong>JSON</strong>
+            <span>config-driven forms</span>
+          </div>
+          <div class="mini-stat">
+            <strong>QR</strong>
+            <span>fast data sharing</span>
+          </div>
+          <div class="mini-stat">
+            <strong>Local</strong>
+            <span>runs in-browser</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="feature-grid">
+        <article class="info-card">
+          <div class="card-icon">📋</div>
+          <h3>Custom scouting forms</h3>
+          <p>Load a configuration file to instantly generate the exact match form your team needs, with more control than static paper sheets.</p>
+        </article>
+        <article class="info-card">
+          <div class="card-icon">⚙️</div>
+          <h3>Built for real matches</h3>
+          <ul>
+            <li>Boolean checks</li>
+            <li>Counter fields</li>
+            <li>Range sliders</li>
+            <li>Dropdowns and notes</li>
+          </ul>
+        </article>
+        <article class="info-card">
+          <div class="card-icon">📲</div>
+          <h3>Generate and share</h3>
+          <p>Once the form is filled, commit the entry and create a QR code. Scan it later to retrieve the same match data without retyping anything.</p>
+        </article>
+      </div>
+
+      <div class="callout">
+        <h3>Why teams use it</h3>
+        <p>QR Scout is designed to keep scouting quick, repeatable, and easy to carry between matches. Whether you are testing a new scouting sheet or supporting a fast live pit-side workflow, the JSON format keeps your process flexible.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="howToUsePage" class="page" aria-label="How to use">
+    <div class="page-shell">
+      <div class="hero panel">
+        <div class="hero-copy">
+          <div class="eyebrow">Team 2549 • How it works</div>
+          <h2>Build a scouting form in a few quick steps.</h2>
+          <p>Use a JSON scouting configuration to define your fields, load it locally in the browser, and generate a QR code from the data you collect during competition.</p>
+        </div>
+      </div>
+
+      <div class="how-grid">
+        <article class="step-card">
+          <div class="step-number">1</div>
+          <h3>Load your configuration</h3>
+          <p>Choose a JSON file or use the sample scouting form to start with an example team layout. The app validates the structure and immediately builds your form in the browser.</p>
+        </article>
+
+        <article class="step-card">
+          <div class="step-number">2</div>
+          <h3>Fill in the fields</h3>
+          <p>Enter initials, match number, robot details, and any match metrics you need. Toggle booleans, adjust counters, set ranges, and use dropdowns for standard scouting options.</p>
+        </article>
+
+        <article class="step-card">
+          <div class="step-number">3</div>
+          <h3>Commit the entry</h3>
+          <p>When you are ready, click “Commit” to review your data. From the review modal, you can generate a QR code or send the same record to your sheet.</p>
+        </article>
+
+        <article class="step-card">
+          <div class="step-number">4</div>
+          <h3>Generate or share</h3>
+          <p>Use the QR image for quick sharing or save it as a PNG file. The generated code includes the same JSON data you entered, which makes it easy to scan and reuse later.</p>
+        </article>
+
+        <article class="step-card">
+          <div class="step-number">5</div>
+          <h3>Sync to Google Sheet</h3>
+          <p>Open the Google Sheet sync panel in the scouting page, paste your Google Apps Script web app URL, and click “Save Sheet sync.” After that, select “Sync to Form” from the commit modal and the app sends the row directly to the sheet.</p>
+        </article>
+      </div>
+
+      <div class="tips-box">
+        <h3>How to set up sheet sync</h3>
+        <ol>
+          <li>Create a Google Apps Script project tied to your sheet and deploy it as a web app.</li>
+          <li>In the script, accept a JSON POST body and use the row data to append to the active sheet.</li>
+          <li>Paste the deployed web app URL into the sync field on the scouting page.</li>
+          <li>Click “Save Sheet sync,” then use the Commit modal to send the current scouting entry.</li>
+          <li>Every synced row is appended in order, making it easy to track match data without manual entry.</li>
+        </ol>
+      </div>
+
+      <div class="tips-box">
+        <h3>Helpful tips</h3>
+        <ul>
+          <li>Keep field names consistent so your JSON stays easy to read and debug.</li>
+          <li>Use boolean and counter fields for fast pit-side collection during active matches.</li>
+          <li>Use the JSON manager to edit or download the current config without leaving the page.</li>
+          <li>Start with the sample form if you want a good baseline before creating your own team config.</li>
+          <li>For live testing, keep the Apps Script URL saved in the sync panel so one click is all it takes to send data.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+  <section id="scoutingPage" class="page" aria-label="Scouting">
+  <div class="intro">
+    <h2>Build a scouting QR code.<br><span>Keep your data portable.</span></h2>
+    <p>Load your QRScout JSON configuration to build its scouting form, then generate and download a QR code.</p>
+  </div>
+
+  <div class="layout">
+    <section class="panel upload-card" id="uploadCard">
+      <div class="upload-icon">⇧</div>
+      <h2>Upload JSON</h2>
+      <p>Choose your scouting configuration to build the form and start collecting match data.</p>
+      <div class="field">
+        <label for="configFile">Scouting configuration (.json)</label>
+        <input id="configFile" type="file" accept=".json,application/json">
+        <div class="hint">Your file is read locally in your browser and is not uploaded to a server.</div>
+      </div>
+      <div class="row">
+        <button id="loadExample" type="button" class="secondary">Load sample scouting form</button>
+      </div>
+      <span id="configStatus" class="hint">No configuration loaded yet.</span>
+    </section>
+    <section class="panel" id="scoutingFormPanel" style="display:none;">
+      <div id="formArea"></div>
+      <div class="actions">
+        <button id="commitBtn" type="button" class="primary">Commit</button>
+        <button id="toggleGoogleFormBtn" type="button">Show sync</button>
+        <button id="resetBtn" type="button">Reset fields</button>
+        <button id="toggleConfigManagerBtn" type="button">Edit / Manage JSON</button>
+      </div>
+    </section>
+  </div>
+  <section class="panel config-manager collapsed" id="configManager">
+    <h3>Configuration Manager</h3>
+    <p>Edit the current JSON directly, load a different JSON file, or download a copy of the current configuration.</p>
+    <label for="jsonEditor">Current JSON configuration</label>
+    <textarea id="jsonEditor" spellcheck="false" placeholder="Load a JSON configuration above to edit it here..."></textarea>
+    <div class="manager-actions">
+      <button id="applyJsonBtn" type="button" class="primary">Apply JSON edits</button>
+      <button id="uploadNewJsonBtn" type="button">Upload new JSON</button>
+      <button id="downloadJsonBtn" type="button">Download current JSON</button>
+      <input id="managerJsonFile" type="file" accept=".json,application/json" hidden>
+    </div>
+    <div id="managerStatus" class="status" style="margin-top:12px;">Load a configuration to enable editing and downloading.</div>
+  </section>
+
+  <section class="panel sync-panel collapsed" id="googleFormSyncPanel">
+    <h3>Google Sheet Sync</h3>
+    <p>Paste the Google Apps Script URL and the shared Google Sheet link. When you click Sync, the app will send the scouting row to the sheet.</p>
+    <div class="sync-grid">
+      <div class="field">
+        <label for="googleFormUrl">Google Apps Script URL</label>
+        <input id="googleFormUrl" type="url" placeholder="https://script.google.com/macros/s/.../exec">
+      </div>
+      <div class="field">
+        <label for="googleSheetUrl">Shared Google Sheet link</label>
+        <input id="googleSheetUrl" type="url" placeholder="https://docs.google.com/spreadsheets/d/.../edit?usp=sharing">
+      </div>
+      <div class="field">
+        <label for="sheetTabName">Optional tab name</label>
+        <input id="sheetTabName" type="text" placeholder="Scouting (optional)">
+      </div>
+      <div class="field">
+        <label for="googleFormStartEntry">Optional start column</label>
+        <input id="googleFormStartEntry" type="text" value="entry.1" placeholder="entry.1">
+        <div class="sync-help">This is mainly for legacy form mapping only.</div>
+      </div>
+      <div class="field">
+        <label for="googleFormMap">Legacy form mapping JSON</label>
+        <textarea id="googleFormMap" spellcheck="false" placeholder='{"scouter":"entry.123456789","matchNumber":"entry.987654321"}'></textarea>
+      </div>
+    </div>
+    <div class="sync-help">Put in the script URL and the shared sheet link. The script can append to the sheet automatically, and the tab name is optional if you want to use the default first sheet.</div>
+    <div class="sync-actions">
+      <button id="applyGoogleFormBtn" type="button" class="primary">Save Sheet sync</button>
+      <button id="clearGoogleFormBtn" type="button">Clear sync</button>
+    </div>
+    <div id="googleFormStatus" class="status" style="margin-top:12px;">No Google Sheet sync configured.</div>
+  </section>
+
+  <div id="commitModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="commitTitle">
+    <div class="modal panel">
+      <button id="closeModalBtn" class="close-modal" type="button" aria-label="Close">×</button>
+      <h3 id="commitTitle">Commit scouting data</h3>
+      <p class="hint">Choose what to do with the information you entered.</p>
+      <div class="choice-grid">
+        <button id="qrChoiceBtn" type="button" class="primary choice-button">
+          <span class="choice-icon">▦</span>
+          <span>QR Code</span>
+          <small>Generate a QR code from this entry</small>
+        </button>
+        <button id="syncChoiceBtn" type="button" class="choice-button">
+          <span class="choice-icon">↻</span>
+          <span>Sync to Form</span>
+          <small>Not implemented yet</small>
+        </button>
+      </div>
+      <div id="modalStatus" class="status hidden"></div>
+      <div id="modalQrBox" class="hidden"></div>
+      <div class="actions">
+        <button id="modalDownloadBtn" class="primary hidden" type="button">Download QR PNG</button>
+      </div>
+    </div>
+  </div>
+  </section>
+</main>
+
+<!-- QRCode.js creates the QR locally in the browser. An internet connection is needed to load this library. -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="assets/js/app.js"></script>
+</body>
+</html>

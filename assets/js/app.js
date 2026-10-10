@@ -1,0 +1,561 @@
+(() => {
+  const $ = (id) => document.getElementById(id);
+  let config = null;
+  let lastPayload = "";
+
+  const sampleConfig = {
+    title: "Millerbots Scouting",
+    page_title: "Millerbots Scouting",
+    teamNumber: 2549,
+    delimiter: "\\t",
+    sections: [
+      { name: "Prematch", fields: [
+        { title: "Scouter Initials", description: "Enter the initials of the scouter.", type: "text", required: true, code: "scouter", defaultValue: "" },
+        { title: "Match Number", description: "Select the match number.", type: "number", required: true, code: "matchNumber", defaultValue: 1 },
+        { title: "Robot number", description: "Enter the robot number you're scouting.", type: "text", required: true, code: "robot", defaultValue: "" },
+        { title: "Starting Position", type: "select", required: true, code: "startPos", defaultValue: "", choices: { B1:"Blue 1", B2:"Blue 2", B3:"Blue 3", R1:"Red 1", R2:"Red 2", R3:"Red 3" } },
+        { title: "No Show", type: "boolean", required: false, code: "noShow", defaultValue: false }
+      ]},
+      { name: "Autonomous", fields: [
+        { title: "Had auto?", type: "boolean", code: "Auto", defaultValue: false },
+        { title: "Fuel Scored in Auto?", type: "counter", code: "autoFuelScored", defaultValue: 0, min: 0, step: 3 },
+        { title: "Fuel Missed in Auto?", type: "counter", code: "autoFuelMissed", defaultValue: 0, min: 0, step: 1 },
+        { title: "Climbed in auto?", type: "boolean", code: "auClimb", defaultValue: false },
+        { title: "Auto effectiveness", type: "range", code: "autoEff", defaultValue: 4, min: 1, max: 7, step: 1 }
+      ]},
+      { name: "Teleop", fields: [
+        { title: "Alliance won auto?", type: "boolean", code: "allianceWonAuto", defaultValue: false },
+        { title: "Fuel Scored in Teleop?", type: "counter", code: "telFuelScored", defaultValue: 0, min: 0, step: 3 },
+        { title: "Fuel Missed in Teleop?", type: "counter", code: "telFuelMissed", defaultValue: 0, min: 0, step: 1 },
+        { title: "Defended during match?", type: "boolean", code: "robotDefended", defaultValue: false },
+        { title: "Passed during match?", type: "boolean", code: "pass", defaultValue: false },
+        { title: "Bump?", type: "boolean", code: "bump", defaultValue: false },
+        { title: "Trench?", type: "boolean", code: "trench", defaultValue: false },
+        { title: "Stuck on fuel during match?", type: "boolean", code: "fuelStuck", defaultValue: false },
+        { title: "Issues", type: "select", required: true, code: "Failures", defaultValue: "No", choices: { No:"Zero issues", Mech:"Mechanical issue", Die:"Died/disconnected", Tip:"Tipped/fell over", Stu:"Stuck for >5-10 seconds", F:"Multiple issues (elaborate in comments)" } }
+      ]},
+      { name: "Endgame/Postmatch", fields: [
+        { title: "Climbed", type: "select", required: true, code: "climbedTel", defaultValue: "No", choices: { No:"No Climb", L1:"Level 1", L2:"Level 2", L3:"Level 3", F:"Failed Climb" } },
+        { title: "Scored How?", type: "select", required: true, code: "scoredHow", defaultValue: "blank", choices: { blank:"(blank)", driving:"While driving", stationary:"While stationary", both:"Both", none:"No scoring" } },
+        { title: "Scoring Accuracy", type: "range", code: "scoringEff", defaultValue: 4, min: 1, max: 7, step: 1 },
+        { title: "Scoring Speed", type: "range", code: "scoringSped", defaultValue: 4, min: 1, max: 7, step: 1 },
+        { title: "Intake Effectiveness", type: "range", code: "intakeEff", defaultValue: 4, min: 1, max: 7, step: 1 },
+        { title: "Driving skill", type: "range", code: "drivSkill", defaultValue: 4, min: 1, max: 7, step: 1 },
+        { title: "Passing Skill", type: "range", code: "passSkill", defaultValue: 0, min: 1, max: 7, step: 1 },
+        { title: "Defense Skill", type: "range", code: "defSkill", defaultValue: 0, min: 1, max: 7, step: 1 },
+        { title: "Yellow/Red Card", type: "select", required: true, code: "yc", defaultValue: "No Card", choices: { "No Card":"No Card", Yellow:"Yellow Card", Red:"Red Card" } },
+        { title: "Comments", type: "text", code: "co", defaultValue: "" }
+      ]}
+    ]
+  };
+
+  function buildAutoGoogleFormMap(startEntryValue = "entry.1") {
+    const orderedCodes = [];
+    config.sections.forEach((section) => {
+      (section.fields || []).forEach((field) => {
+        if (field && field.code) orderedCodes.push(field.code);
+      });
+    });
+
+    const match = String(startEntryValue || "entry.1").match(/(\d+)/);
+    const startIndex = match ? Number(match[1]) : 1;
+    const map = {};
+    orderedCodes.forEach((code, index) => {
+      map[code] = `entry.${startIndex + index}`;
+    });
+    return map;
+  }
+
+  function safeId(value) {
+    return "field_" + String(value || "unknown").replace(/[^a-zA-Z0-9_-]/g, "_");
+  }
+
+  function makeField(field) {
+    const wrapper = document.createElement("div");
+    wrapper.className = "field";
+    const id = safeId(field.code);
+    const label = document.createElement("label");
+    label.htmlFor = id;
+    label.textContent = field.title || field.code || "Field";
+    if (field.required) label.textContent += " *";
+    wrapper.appendChild(label);
+
+    let input;
+    if (field.type === "boolean") {
+      const line = document.createElement("div");
+      line.className = "checkline";
+      input = document.createElement("input");
+      input.type = "checkbox";
+      input.checked = Boolean(field.defaultValue);
+      input.id = id;
+      const yes = document.createElement("label");
+      yes.htmlFor = id;
+      yes.textContent = "Yes";
+      line.append(input, yes);
+      wrapper.appendChild(line);
+    } else if (field.type === "select") {
+      input = document.createElement("select");
+      input.id = id;
+      const blank = document.createElement("option");
+      blank.value = "";
+      blank.textContent = "Choose an option…";
+      input.appendChild(blank);
+      Object.entries(field.choices || {}).forEach(([value, text]) => {
+        const opt = document.createElement("option");
+        opt.value = value;
+        opt.textContent = text;
+        input.appendChild(opt);
+      });
+      input.value = field.defaultValue ?? "";
+      wrapper.appendChild(input);
+    } else if (field.type === "range") {
+      input = document.createElement("input");
+      input.type = "range";
+      input.id = id;
+      input.min = field.min ?? 0;
+      input.max = field.max ?? 10;
+      input.step = field.step ?? 1;
+      input.value = field.defaultValue ?? input.min;
+      const val = document.createElement("div");
+      val.className = "hint";
+      const update = () => {
+        val.textContent = "Value: " + input.value;
+      };
+      input.addEventListener("input", update);
+      update();
+      wrapper.append(input, val);
+    } else if (field.type === "counter") {
+      const counter = document.createElement("div");
+      counter.className = "counter-control";
+      const minus = document.createElement("button");
+      minus.type = "button";
+      minus.className = "counter-btn minus";
+      minus.textContent = "−";
+      minus.setAttribute("aria-label", "Decrease " + (field.title || field.code));
+      input = document.createElement("input");
+      input.id = id;
+      input.type = "number";
+      input.min = field.min ?? 0;
+      input.step = field.step ?? 1;
+      if (field.max !== undefined) input.max = field.max;
+      input.value = field.defaultValue ?? 0;
+      const plus = document.createElement("button");
+      plus.type = "button";
+      plus.className = "counter-btn plus";
+      plus.textContent = "+";
+      plus.setAttribute("aria-label", "Increase " + (field.title || field.code));
+      const changeByStep = (direction) => {
+        const step = Number(input.step) || 1;
+        const current = input.value === "" ? Number(input.min || 0) : Number(input.value);
+        let next = current + direction * step;
+        if (input.min !== "") next = Math.max(Number(input.min), next);
+        if (input.max !== "") next = Math.min(Number(input.max), next);
+        input.value = String(next);
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+        input.dispatchEvent(new Event("change", { bubbles: true }));
+      };
+      minus.addEventListener("click", () => changeByStep(-1));
+      plus.addEventListener("click", () => changeByStep(1));
+      counter.append(minus, input, plus);
+      wrapper.appendChild(counter);
+    } else {
+      input = document.createElement("input");
+      input.id = id;
+      input.type = field.type === "number" ? "number" : "text";
+      if (field.type === "number") input.step = field.step ?? 1;
+      if (field.max !== undefined && input.type === "text") input.maxLength = Number(field.max);
+      input.value = field.defaultValue ?? "";
+      wrapper.appendChild(input);
+    }
+
+    input.dataset.fieldCode = field.code;
+    input.dataset.fieldType = field.type;
+    input.dataset.required = field.required ? "true" : "false";
+    if (field.description) {
+      const hint = document.createElement("div");
+      hint.className = "hint";
+      hint.textContent = field.description;
+      wrapper.appendChild(hint);
+    }
+    return wrapper;
+  }
+
+  function renderForm() {
+    const area = $("formArea");
+    area.innerHTML = "";
+    if (!config || !Array.isArray(config.sections)) return;
+    config.sections.forEach((section) => {
+      const sectionEl = document.createElement("div");
+      sectionEl.className = "section";
+      const title = document.createElement("div");
+      title.className = "section-title";
+      title.textContent = section.name || "Fields";
+      sectionEl.appendChild(title);
+      (section.fields || []).forEach((field) => sectionEl.appendChild(makeField(field)));
+      area.appendChild(sectionEl);
+    });
+    $("configStatus").textContent = `${config.title || "Configuration"} loaded`;
+  }
+
+  function collectData() {
+    const data = {};
+    const controls = $("formArea").querySelectorAll("[data-field-code]");
+    for (const control of controls) {
+      const code = control.dataset.fieldCode;
+      const type = control.dataset.fieldType;
+      const required = control.dataset.required === "true";
+      let value;
+      if (type === "boolean") value = control.checked;
+      else if (type === "number" || type === "counter" || type === "range") {
+        value = control.value === "" ? "" : Number(control.value);
+      } else {
+        value = control.value.trim();
+      }
+      if (required && (value === "" || value === null || value === undefined)) {
+        control.focus();
+        throw new Error(`Please complete the required field: ${code}`);
+      }
+      data[code] = value;
+    }
+    return {
+      title: config.title || "QR Scout",
+      teamNumber: config.teamNumber ?? null,
+      createdAt: new Date().toISOString(),
+      data
+    };
+  }
+
+  function setStatus(message, isError = false) {
+    const el = $("configStatus");
+    if (!el) return;
+    el.textContent = message;
+    el.classList.toggle("error", isError);
+    el.classList.toggle("ok", !isError && /loaded|ready|generated/i.test(message));
+  }
+
+  function setGoogleFormStatus(message, isError = false) {
+    const el = $("googleFormStatus");
+    if (!el) return;
+    el.textContent = message;
+    el.className = "status" + (isError ? " error" : " ok");
+  }
+
+  function showModal() {
+    $("commitModal").classList.remove("hidden");
+    $("modalStatus").classList.add("hidden");
+    $("modalQrBox").classList.add("hidden");
+    $("modalQrBox").innerHTML = "";
+    $("modalDownloadBtn").classList.add("hidden");
+  }
+
+  function hideModal() {
+    $("commitModal").classList.add("hidden");
+  }
+
+  function setModalStatus(message, error = false, ok = false) {
+    const el = $("modalStatus");
+    el.textContent = message;
+    el.className = "status" + (error ? " error" : ok ? " ok" : "");
+  }
+
+  function isFileProtocol() {
+    return window.location.protocol === "file:";
+  }
+
+  function saveGoogleFormSync() {
+    if (!config) {
+      setGoogleFormStatus("Load a scouting configuration before saving a sync endpoint.", true);
+      return;
+    }
+
+    const formUrl = $("googleFormUrl").value.trim();
+    const sheetUrl = $("googleSheetUrl").value.trim();
+    const sheetTabName = $("sheetTabName").value.trim() || "Sheet1";
+    const startEntryValue = $("googleFormStartEntry").value.trim() || "entry.1";
+    let map = {};
+    const rawMap = $("googleFormMap").value.trim();
+
+    if (rawMap) {
+      try {
+        map = JSON.parse(rawMap);
+      } catch (err) {
+        setGoogleFormStatus("Field mapping must be valid JSON.", true);
+        return;
+      }
+    } else {
+      map = buildAutoGoogleFormMap(startEntryValue);
+    }
+
+    if (!formUrl && !sheetUrl && !rawMap) {
+      delete config.googleFormUrl;
+      delete config.googleFormMap;
+      delete config.googleFormStartEntry;
+      delete config.googleSheetUrl;
+      delete config.googleSheetTab;
+      setGoogleFormStatus("Google Sheet sync cleared.", false);
+      return;
+    }
+
+    if (!formUrl || !sheetUrl) {
+      setGoogleFormStatus("Add both the Google Apps Script URL and the shared Google Sheet link.", true);
+      return;
+    }
+
+    try {
+      new URL(formUrl);
+      new URL(sheetUrl);
+    } catch (err) {
+      setGoogleFormStatus("One of the URLs is not valid.", true);
+      return;
+    }
+
+    config.googleFormUrl = formUrl;
+    config.googleSheetUrl = sheetUrl;
+    config.googleSheetTab = sheetTabName;
+    config.googleFormMap = map;
+    config.googleFormStartEntry = startEntryValue;
+    $("googleFormUrl").value = formUrl;
+    $("googleSheetUrl").value = sheetUrl;
+    $("sheetTabName").value = sheetTabName;
+    $("googleFormMap").value = JSON.stringify(map, null, 2);
+    $("googleFormStartEntry").value = startEntryValue;
+    setGoogleFormStatus("Google Sheet sync saved.", false);
+  }
+
+  function clearGoogleFormSync() {
+    $("googleFormUrl").value = "";
+    $("googleSheetUrl").value = "";
+    $("sheetTabName").value = "";
+    $("googleFormMap").value = "";
+    $("googleFormStartEntry").value = "entry.1";
+    if (config) {
+      delete config.googleFormUrl;
+      delete config.googleFormMap;
+      delete config.googleFormStartEntry;
+      delete config.googleSheetUrl;
+      delete config.googleSheetTab;
+    }
+    setGoogleFormStatus("Google Sheet sync cleared.", false);
+  }
+
+  function syncToGoogleForm() {
+    if (!config || !(config.googleFormUrl || config.googleSheetUrl)) {
+      setModalStatus("Add both the script URL and sheet link in the sync panel first.", true);
+      return;
+    }
+
+    if (isFileProtocol()) {
+      setModalStatus("Open the site through a local web server first, then try sync again. Example: python -m http.server 8000", true);
+      return;
+    }
+
+    try {
+      const payload = collectData();
+      const scriptUrl = (config.googleFormUrl || "").trim();
+      const sheetUrl = (config.googleSheetUrl || "").trim();
+      const sheetTabName = (config.googleSheetTab || $("sheetTabName").value || "Sheet1").trim();
+      const isGoogleForm = /docs\.google\.com\/forms/i.test(sheetUrl);
+
+      if (isGoogleForm) {
+        let map = config.googleFormMap || {};
+        if (!Object.keys(map).length) {
+          const startEntryValue = (config.googleFormStartEntry || $("googleFormStartEntry").value || "entry.1").trim();
+          map = buildAutoGoogleFormMap(startEntryValue);
+        }
+
+        const googleUrl = new URL(sheetUrl);
+        const params = new URLSearchParams(googleUrl.search);
+        Object.entries(map).forEach(([fieldCode, entryId]) => {
+          const key = String(entryId || "").trim();
+          if (!key) return;
+          const normalizedKey = key.startsWith("entry.") ? key : `entry.${key}`;
+          const rawValue = payload.data[fieldCode];
+          if (rawValue !== undefined && rawValue !== null && rawValue !== "") {
+            params.set(normalizedKey, String(rawValue));
+          }
+        });
+        googleUrl.search = params.toString();
+        setModalStatus("Opening Google Form with synced data...", false, true);
+        window.open(googleUrl.toString(), "_blank", "noopener,noreferrer");
+        return;
+      }
+
+      if (!scriptUrl || !sheetUrl) {
+        setModalStatus("Add both the Apps Script URL and the shared sheet link before syncing.", true);
+        return;
+      }
+
+      const response = fetch(scriptUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          title: payload.title,
+          teamNumber: payload.teamNumber,
+          createdAt: payload.createdAt,
+          data: payload.data,
+          row: Object.values(payload.data),
+          sheetUrl,
+          sheetTab: sheetTabName
+        })
+      });
+
+      setModalStatus("Sending scouting data to Google Sheet...", false, true);
+      response.then(async (res) => {
+        const text = await res.text();
+        if (!res.ok) {
+          throw new Error(text || "Google Sheet request failed.");
+        }
+        setModalStatus("Scouting data sent to Google Sheet successfully.", false, true);
+      }).catch((err) => {
+        const message = err && err.message ? err.message : "Could not sync to Google Sheet.";
+        setModalStatus(message.includes("Failed to fetch") || message.includes("NetworkError")
+          ? "Fetch failed. Check the Apps Script URL, deploy it as a Web App, and open the site over localhost instead of file://."
+          : message, true);
+      });
+    } catch (err) {
+      const message = err && err.message ? err.message : "Could not sync to Google Sheet.";
+      setModalStatus(message.includes("Failed to fetch") || message.includes("NetworkError")
+        ? "Fetch failed. Check the Apps Script URL, deploy it as a Web App, and open the site over localhost instead of file://."
+        : message, true);
+    }
+  }
+
+  function generateQrChoice() {
+    if (!config) {
+      setModalStatus("Please load a JSON configuration first.", true);
+      return;
+    }
+    if (typeof QRCode === "undefined") {
+      setModalStatus("QR library did not load. Check your internet connection and refresh.", true);
+      return;
+    }
+    try {
+      const payload = collectData();
+      lastPayload = JSON.stringify(payload);
+      $("modalQrBox").innerHTML = "";
+      $("modalQrBox").classList.remove("hidden");
+      new QRCode($("modalQrBox"), {
+        text: lastPayload,
+        width: 256,
+        height: 256,
+        colorDark: "#000000",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.L
+      });
+      $("modalDownloadBtn").classList.remove("hidden");
+      setModalStatus("QR code generated. Scan it to retrieve the scouting data.", false, true);
+    } catch (err) {
+      setModalStatus(err.message || "Could not generate QR code.", true);
+    }
+  }
+
+  function downloadQr() {
+    const canvas = $("modalQrBox").querySelector("canvas");
+    const img = $("modalQrBox").querySelector("img");
+    const url = canvas ? canvas.toDataURL("image/png") : img ? img.src : "";
+    if (!url) return;
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `qr-scout-${Date.now()}.png`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }
+
+  function resetFields() {
+    if (!config) return;
+    renderForm();
+    lastPayload = "";
+    hideModal();
+  }
+
+  function showPage(pageId) {
+    document.querySelectorAll(".page").forEach((page) => page.classList.toggle("active", page.id === pageId));
+    document.querySelectorAll(".tab-btn").forEach((tab) => tab.classList.toggle("active", tab.dataset.page === pageId));
+    if (pageId !== "scoutingPage") {
+      document.body.classList.remove("config-loaded");
+    } else if (config) {
+      document.body.classList.add("config-loaded");
+    }
+  }
+
+  document.querySelectorAll(".tab-btn").forEach((tab) => {
+    tab.addEventListener("click", () => showPage(tab.dataset.page));
+  });
+
+  document.querySelectorAll("[data-page]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const target = button.dataset.page;
+      if (target) showPage(target);
+    });
+  });
+
+  function applyConfig(obj) {
+    if (!obj || !Array.isArray(obj.sections)) throw new Error("This JSON does not contain a sections array.");
+    config = obj;
+    showPage("scoutingPage");
+    $("uploadCard").style.display = "none";
+    $("scoutingFormPanel").style.display = "block";
+    document.body.classList.add("config-loaded");
+    renderForm();
+    $("jsonEditor").value = JSON.stringify(config, null, 2);
+    $("managerStatus").textContent = "Configuration loaded. You can edit, replace, or download this JSON.";
+    $("managerStatus").className = "status ok";
+    setStatus("Configuration loaded. Fill in the fields, then generate a QR code.");
+    $("googleSheetUrl").value = config.googleSheetUrl || config.googleFormUrl || "";
+    $("sheetTabName").value = config.googleSheetTab || "Sheet1";
+    $("googleFormUrl").value = config.googleFormUrl || "";
+    $("googleFormMap").value = config.googleFormMap ? JSON.stringify(config.googleFormMap, null, 2) : "";
+    $("googleFormStartEntry").value = config.googleFormStartEntry || "entry.1";
+    if (config.googleFormUrl || config.googleSheetUrl || config.googleFormMap) {
+      setGoogleFormStatus("Google Sheet sync loaded.", false);
+    } else {
+      setGoogleFormStatus("No Google Sheet sync configured.", false);
+    }
+  }
+
+  $("configFile").addEventListener("change", async (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    try {
+      applyConfig(JSON.parse(await file.text()));
+    } catch (err) {
+      $("configStatus").textContent = "Could not load JSON.";
+      setStatus(err.message || "Invalid JSON.", true);
+    }
+  });
+
+  $("loadExample").addEventListener("click", () => {
+    try {
+      applyConfig(sampleConfig);
+    } catch (err) {
+      setStatus(err.message, true);
+    }
+  });
+
+  $("commitBtn").addEventListener("click", showModal);
+  $("resetBtn").addEventListener("click", resetFields);
+  $("toggleConfigManagerBtn").addEventListener("click", () => {
+    const manager = $("configManager");
+    const isHidden = manager.classList.toggle("collapsed");
+    $("toggleConfigManagerBtn").textContent = isHidden ? "Edit / Manage JSON" : "Hide JSON Manager";
+    if (!isHidden) manager.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+  $("closeModalBtn").addEventListener("click", hideModal);
+  $("commitModal").addEventListener("click", (e) => {
+    if (e.target === $("commitModal")) hideModal();
+  });
+  $("qrChoiceBtn").addEventListener("click", generateQrChoice);
+  $("syncChoiceBtn").addEventListener("click", syncToGoogleForm);
+  $("applyGoogleFormBtn").addEventListener("click", saveGoogleFormSync);
+  $("clearGoogleFormBtn").addEventListener("click", clearGoogleFormSync);
+  $("toggleGoogleFormBtn").addEventListener("click", () => {
+    const panel = $("googleFormSyncPanel");
+    const collapsed = panel.classList.toggle("collapsed");
+    $("toggleGoogleFormBtn").textContent = collapsed ? "Show sync" : "Hide sync";
+    if (!collapsed) panel.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+  $("modalDownloadBtn").addEventListener("click", downloadQr);
+})();
