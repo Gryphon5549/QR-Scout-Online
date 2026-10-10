@@ -1,13 +1,26 @@
+function doGet(e) {
+  return ContentService
+    .createTextOutput(JSON.stringify({
+      ok: true,
+      status: 'QR Scout backend is running.'
+    }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
 function doPost(e) {
   try {
-    const payload = JSON.parse(e.postData.contents || '{}');
+    const rawBody = e && e.postData && e.postData.contents ? e.postData.contents : '{}';
+    const payload = JSON.parse(rawBody || '{}');
     const sheetUrl = String(payload.sheetUrl || '').trim();
+    const sheetIdFromPayload = String(payload.sheetId || '').trim();
     const tabName = String(payload.sheetTab || 'Sheet1').trim() || 'Sheet1';
     const row = Array.isArray(payload.row)
       ? payload.row
-      : Object.values(payload.data || {});
+      : Array.isArray(payload.data)
+        ? payload.data
+        : Object.values(payload.data || {});
 
-    if (!sheetUrl) {
+    if (!sheetUrl && !sheetIdFromPayload) {
       throw new Error('Missing sheetUrl in request payload.');
     }
 
@@ -15,8 +28,8 @@ function doPost(e) {
       throw new Error('Missing row data in request payload.');
     }
 
-    const sheetId = extractSheetId(sheetUrl);
-    const spreadsheet = SpreadsheetApp.openById(sheetId);
+    const spreadsheetId = sheetIdFromPayload || extractSheetId(sheetUrl);
+    const spreadsheet = SpreadsheetApp.openById(spreadsheetId);
     const targetSheet = spreadsheet.getSheetByName(tabName) || spreadsheet.insertSheet(tabName);
 
     targetSheet.appendRow(row);
@@ -24,16 +37,18 @@ function doPost(e) {
     return ContentService
       .createTextOutput(JSON.stringify({
         ok: true,
-        sheetId,
+        spreadsheetId,
         tabName,
-        rowsAppended: row.length
+        rowsAppended: row.length,
+        status: 'Row appended successfully.'
       }))
       .setMimeType(ContentService.MimeType.JSON);
   } catch (error) {
     return ContentService
       .createTextOutput(JSON.stringify({
         ok: false,
-        error: error.message || 'Unknown error while appending row.'
+        error: error && error.message ? error.message : String(error),
+        status: 'Failed to append row.'
       }))
       .setMimeType(ContentService.MimeType.JSON);
   }
