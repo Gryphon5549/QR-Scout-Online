@@ -3,6 +3,7 @@
   const STORAGE_KEY = "qrscoutSavedState";
   let config = null;
   let lastPayload = "";
+  let shouldAdvanceMatch = false;
 
   const sampleConfig = {
     title: "Millerbots Scouting",
@@ -139,7 +140,7 @@
       input.id = id;
       const blank = document.createElement("option");
       blank.value = "";
-      blank.textContent = "Choose an option…";
+      blank.textContent = "Choose an optionâ€¦";
       input.appendChild(blank);
       Object.entries(field.choices || {}).forEach(([value, text]) => {
         const opt = document.createElement("option");
@@ -268,7 +269,7 @@
     if (!el) return;
     el.textContent = message;
     el.classList.toggle("error", isError);
-    el.classList.toggle("ok", !isError && /loaded|ready|generated/i.test(message));
+    el.classList.toggle("ok", !isError && /loaded|ready|generated|reset/i.test(message));
   }
 
   function setGoogleFormStatus(message, isError = false) {
@@ -279,15 +280,49 @@
   }
 
   function showModal() {
+    shouldAdvanceMatch = false;
+    clearModalContent();
+    const syncBtn = $("syncChoiceBtn");
+    if (syncBtn) syncBtn.classList.remove("hidden");
     $("commitModal").classList.remove("hidden");
-    $("modalStatus").classList.add("hidden");
-    $("modalQrBox").classList.add("hidden");
-    $("modalQrBox").innerHTML = "";
-    $("modalDownloadBtn").classList.add("hidden");
+  }
+
+  function advanceMatchNumber() {
+    if (!config || !$("formArea")) return;
+    const control = $("formArea").querySelector('[data-field-code="matchNumber"]');
+    if (!control) return;
+    const step = Number(control.step) || 1;
+    const current = control.value === "" ? Number(control.min || 1) : Number(control.value);
+    let next = (Number.isFinite(current) ? current : 1) + step;
+    const min = control.min !== "" && control.min !== undefined && control.min !== null ? Number(control.min) : null;
+    if (min !== null && Number.isFinite(min)) next = Math.max(min, next);
+    control.value = String(next);
+    control.dispatchEvent(new Event("input", { bubbles: true }));
+    control.dispatchEvent(new Event("change", { bubbles: true }));
   }
 
   function hideModal() {
+    if (shouldAdvanceMatch) {
+      shouldAdvanceMatch = false;
+      advanceMatchNumber();
+    }
     $("commitModal").classList.add("hidden");
+    clearModalContent();
+  }
+
+  function clearModalContent() {
+    const status = $("modalStatus");
+    if (status) {
+      status.textContent = "";
+      status.className = "status hidden";
+    }
+    const qrBox = $("modalQrBox");
+    if (qrBox) {
+      qrBox.innerHTML = "";
+      qrBox.classList.add("hidden");
+    }
+    const downloadBtn = $("modalDownloadBtn");
+    if (downloadBtn) downloadBtn.classList.add("hidden");
   }
 
   function setModalStatus(message, error = false, ok = false) {
@@ -449,6 +484,7 @@
         }
 
         setModalStatus("Scouting data sent successfully.", false, true);
+        shouldAdvanceMatch = true;
       }).catch((err) => {
         const raw = err && err.message ? err.message : "Could not sync to the script.";
         const fallbackCsv = downloadCsvFallback(payload);
@@ -489,6 +525,9 @@
         correctLevel: QRCode.CorrectLevel.L
       });
       $("modalDownloadBtn").classList.remove("hidden");
+      shouldAdvanceMatch = true;
+      const syncBtn = $("syncChoiceBtn");
+      if (syncBtn) syncBtn.classList.add("hidden");
       setModalStatus("QR code generated. Scan it to retrieve the scouting data.", false, true);
     } catch (err) {
       setModalStatus(err.message || "Could not generate QR code.", true);
@@ -509,11 +548,37 @@
   }
 
   function resetFields() {
-    if (!config) return;
+    lastPayload = "";
+    shouldAdvanceMatch = false;
+    hideModal();
+    if (!config) {
+      setStatus("No configuration loaded to reset.", true);
+      return;
+    }
+    const preserved = {};
+    let nextMatchNumber = null;
+    $("formArea").querySelectorAll("[data-field-code]").forEach((control) => {
+      const code = control.dataset.fieldCode;
+      if (code === "scouter" || code === "startPos") {
+        preserved[code] = control.value;
+      } else if (code === "matchNumber") {
+        const step = Number(control.step) || 1;
+        const current = control.value === "" ? Number(control.min || 1) : Number(control.value);
+        nextMatchNumber = (Number.isFinite(current) ? current : 1) + step;
+      }
+    });
     clearSavedState();
     renderForm();
-    lastPayload = "";
-    hideModal();
+    $("formArea").querySelectorAll("[data-field-code]").forEach((control) => {
+      const code = control.dataset.fieldCode;
+      if (code === "scouter" || code === "startPos") {
+        control.value = preserved[code] ?? control.value;
+      } else if (code === "matchNumber" && nextMatchNumber !== null) {
+        control.value = String(nextMatchNumber);
+      }
+    });
+    saveCurrentState();
+    setStatus("Fields reset to their default values.");
   }
 
   function goHome() {
@@ -587,6 +652,7 @@
   });
   $("commitBtn").addEventListener("click", showModal);
   $("resetBtn").addEventListener("click", resetFields);
+  $("resetFormBtn").addEventListener("click", resetFields);
   $("toggleConfigManagerBtn").addEventListener("click", () => {
     const manager = $("configManager");
     const isHidden = manager.classList.toggle("collapsed");
@@ -661,5 +727,3 @@
     restoreSavedConfiguration();
   }
 })();
-
-
