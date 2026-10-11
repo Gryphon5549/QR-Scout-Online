@@ -1,4 +1,4 @@
-﻿:root {
+:root {
   --bg: #0d1320;
   --panel: #121b2a;
   --panel-strong: #0f1726;
@@ -66,6 +66,7 @@ button:hover { filter: brightness(1.05); }
   gap: 12px;
   max-width: 1100px;
   margin: 0 auto;
+  cursor: pointer;
 }
 
 .brand-mark {
@@ -395,3 +396,4 @@ input[type="range"] {
   .actions { flex-direction: column; }
   .actions button, .manager-actions button, .sync-actions button { width: 100%; }
 }
+

@@ -1,4 +1,4 @@
-﻿(() => {
+(() => {
   const $ = (id) => document.getElementById(id);
   const STORAGE_KEY = "qrscoutSavedState";
   const DEFAULT_SYNC_URL = "https://qr-scout-online.onrender.com/api/sheets-sync";
@@ -140,7 +140,7 @@
       input.id = id;
       const blank = document.createElement("option");
       blank.value = "";
-      blank.textContent = "Choose an option…";
+      blank.textContent = "Choose an option�";
       input.appendChild(blank);
       Object.entries(field.choices || {}).forEach(([value, text]) => {
         const opt = document.createElement("option");
@@ -170,7 +170,7 @@
       const minus = document.createElement("button");
       minus.type = "button";
       minus.className = "counter-btn minus";
-      minus.textContent = "−";
+      minus.textContent = "-";
       input = document.createElement("input");
       input.id = id;
       input.type = "number";
@@ -513,6 +513,13 @@
     hideModal();
   }
 
+  function goHome() {
+    $("welcomeSection").classList.remove("hidden");
+    $("scoutingPage").classList.add("hidden");
+    $("configStatus").textContent = "Ready for a new config.";
+    $("configStatus").className = "status";
+  }
+
   function applyConfig(obj) {
     if (!obj || !Array.isArray(obj.sections)) throw new Error("This JSON does not contain a sections array.");
     config = obj;
@@ -565,6 +572,18 @@
     }
   });
 
+  $("brandHomeBtn").addEventListener("click", goHome);
+  $("brandHomeBtn").addEventListener("keydown", (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      goHome();
+    }
+  });
+  $("clearJsonBtn").addEventListener("click", () => {
+    $("jsonEditor").value = "";
+    $("managerStatus").textContent = "JSON editor cleared. Load or paste a config to continue.";
+    $("managerStatus").className = "status";
+  });
   $("commitBtn").addEventListener("click", showModal);
   $("resetBtn").addEventListener("click", resetFields);
   $("toggleConfigManagerBtn").addEventListener("click", () => {
@@ -641,3 +660,4 @@
     restoreSavedConfiguration();
   }
 })();
+
