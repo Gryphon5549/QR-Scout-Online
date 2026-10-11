@@ -333,6 +333,8 @@ input[type="range"] {
 
 .modal {
   width: min(620px, 100%);
+  max-height: 88vh;
+  overflow-y: auto;
   position: relative;
 }
 
@@ -368,6 +370,8 @@ input[type="range"] {
 #modalQrBox {
   max-width: 100%;
   width: max-content;
+  max-height: 72vh;
+  overflow: auto;
   margin: 18px auto 0;
   background: white;
   border-radius: 12px;
@@ -674,6 +678,8 @@ input[type="range"] {
     grid-template-columns: 1fr;
   }
 }
+
+
 
 
 
