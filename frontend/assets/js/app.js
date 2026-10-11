@@ -1,6 +1,7 @@
 ﻿(() => {
   const $ = (id) => document.getElementById(id);
   const STORAGE_KEY = "qrscoutSavedState";
+  const DEFAULT_SYNC_URL = "https://qr-scout-online.onrender.com/api/sheets-sync";
   let config = null;
   let lastPayload = "";
 
@@ -91,7 +92,9 @@
       else value = control.value;
       formState[code] = value;
     });
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ config, form: formState }));
+
+    const currentSyncUrl = $("googleFormUrl") ? ($("googleFormUrl").value.trim() || DEFAULT_SYNC_URL) : (config.googleFormUrl || DEFAULT_SYNC_URL);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ config, form: formState, syncUrl: currentSyncUrl }));
   }
 
   function applySavedValues() {
@@ -157,9 +160,7 @@
       input.value = field.defaultValue ?? input.min;
       const val = document.createElement("div");
       val.className = "hint";
-      const update = () => {
-        val.textContent = "Value: " + input.value;
-      };
+      const update = () => { val.textContent = "Value: " + input.value; };
       input.addEventListener("input", update);
       update();
       wrapper.append(input, val);
@@ -170,7 +171,6 @@
       minus.type = "button";
       minus.className = "counter-btn minus";
       minus.textContent = "−";
-      minus.setAttribute("aria-label", "Decrease " + (field.title || field.code));
       input = document.createElement("input");
       input.id = id;
       input.type = "number";
@@ -182,7 +182,6 @@
       plus.type = "button";
       plus.className = "counter-btn plus";
       plus.textContent = "+";
-      plus.setAttribute("aria-label", "Increase " + (field.title || field.code));
       const changeByStep = (direction) => {
         const step = Number(input.step) || 1;
         const current = input.value === "" ? Number(input.min || 0) : Number(input.value);
@@ -361,38 +360,31 @@
 
     const formUrl = $("googleFormUrl").value.trim();
     const sheetTabName = $("sheetTabName").value.trim() || "Sheet1";
-
-    if (!formUrl) {
-      delete config.googleFormUrl;
-      delete config.googleSheetTab;
-      setGoogleFormStatus("Script sync cleared.", false);
-      saveCurrentState();
-      return;
-    }
+    const finalUrl = formUrl || DEFAULT_SYNC_URL;
 
     try {
-      new URL(formUrl);
+      new URL(finalUrl);
     } catch (err) {
       setGoogleFormStatus("The script URL is not valid.", true);
       return;
     }
 
-    config.googleFormUrl = formUrl;
+    config.googleFormUrl = finalUrl;
     config.googleSheetTab = sheetTabName;
-    $("googleFormUrl").value = formUrl;
+    $("googleFormUrl").value = finalUrl;
     $("sheetTabName").value = sheetTabName;
     setGoogleFormStatus("Script sync saved.", false);
     saveCurrentState();
   }
 
   function clearGoogleFormSync() {
-    $("googleFormUrl").value = "";
-    $("sheetTabName").value = "";
+    $("googleFormUrl").value = DEFAULT_SYNC_URL;
+    $("sheetTabName").value = $("sheetTabName").value.trim() || "Sheet1";
     if (config) {
-      delete config.googleFormUrl;
-      delete config.googleSheetTab;
+      config.googleFormUrl = DEFAULT_SYNC_URL;
+      config.googleSheetTab = $("sheetTabName").value.trim() || "Sheet1";
     }
-    setGoogleFormStatus("Script sync cleared.", false);
+    setGoogleFormStatus("Default sync URL restored.", false);
     saveCurrentState();
   }
 
@@ -524,6 +516,7 @@
   function applyConfig(obj) {
     if (!obj || !Array.isArray(obj.sections)) throw new Error("This JSON does not contain a sections array.");
     config = obj;
+    config.googleFormUrl = config.googleFormUrl || DEFAULT_SYNC_URL;
     $("welcomeSection").classList.add("hidden");
     $("scoutingPage").classList.remove("hidden");
     renderForm();
@@ -532,12 +525,8 @@
     $("managerStatus").className = "status ok";
     setStatus("Configuration loaded. Fill in the fields, then generate a QR code.");
     $("sheetTabName").value = config.googleSheetTab || "Sheet1";
-    $("googleFormUrl").value = config.googleFormUrl || "";
-    if (config.googleFormUrl) {
-      setGoogleFormStatus("Script sync loaded.", false);
-    } else {
-      setGoogleFormStatus("No sync configured.", false);
-    }
+    $("googleFormUrl").value = config.googleFormUrl || DEFAULT_SYNC_URL;
+    setGoogleFormStatus("Script sync loaded.", false);
     saveCurrentState();
   }
 
@@ -545,6 +534,7 @@
     const saved = getSavedState();
     if (!saved || !saved.config || !Array.isArray(saved.config.sections)) return;
     config = saved.config;
+    config.googleFormUrl = config.googleFormUrl || saved.syncUrl || DEFAULT_SYNC_URL;
     $("welcomeSection").classList.add("hidden");
     $("scoutingPage").classList.remove("hidden");
     renderForm();
@@ -552,7 +542,7 @@
     $("managerStatus").textContent = "Saved scouting data restored.";
     $("managerStatus").className = "status ok";
     $("sheetTabName").value = config.googleSheetTab || "Sheet1";
-    $("googleFormUrl").value = config.googleFormUrl || "";
+    $("googleFormUrl").value = config.googleFormUrl || DEFAULT_SYNC_URL;
     setStatus("Saved progress restored.");
   }
 
@@ -640,6 +630,11 @@
     a.remove();
     URL.revokeObjectURL(url);
   });
+
+  const syncInput = $("googleFormUrl");
+  if (syncInput && !syncInput.value) {
+    syncInput.value = DEFAULT_SYNC_URL;
+  }
 
   const saved = getSavedState();
   if (saved && saved.config && Array.isArray(saved.config.sections)) {
