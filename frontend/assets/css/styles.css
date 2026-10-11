@@ -1,4 +1,4 @@
-:root {
+﻿:root {
   --bg: #0d1320;
   --panel: #121b2a;
   --panel-strong: #0f1726;
@@ -63,13 +63,17 @@ button:hover { filter: brightness(1.05); }
 .brand-block {
   display: flex;
   align-items: center;
+  justify-content: flex-start;
   gap: 12px;
   max-width: 1100px;
   margin: 0 auto;
   cursor: pointer;
+  width: 100%;
+  flex-direction: row;
 }
 
 .brand-mark {
+  order: 2;
   width: 48px;
   height: 48px;
   border-radius: 14px;
@@ -83,6 +87,7 @@ button:hover { filter: brightness(1.05); }
 }
 
 .brand-block h1 {
+  order: 1;
   margin: 0;
   font-size: clamp(1.2rem, 2vw, 1.8rem);
 }
@@ -358,11 +363,6 @@ input[type="range"] {
 .choice-button small {
   color: var(--muted);
   font-weight: 500;
-}
-
-.choice-icon {
-  font-size: 1.6rem;
-  color: var(--orange);
 }
 
 #modalQrBox {
@@ -674,4 +674,6 @@ input[type="range"] {
     grid-template-columns: 1fr;
   }
 }
+
+
 

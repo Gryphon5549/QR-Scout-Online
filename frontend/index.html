@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -9,10 +9,8 @@
 <body>
   <header class="topbar">
     <div id="brandHomeBtn" class="brand-block" role="button" tabindex="0" aria-label="Return to the welcome screen">
+      <h1>2549 Scouting</h1>
       <div class="brand-mark">2549</div>
-      <div>
-        <h1>2549 Scouting</h1>
-      </div>
     </div>
   </header>
 
@@ -97,18 +95,16 @@
 
   <div id="commitModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="commitTitle">
     <div class="modal panel">
-      <button id="closeModalBtn" class="close-modal" type="button" aria-label="Close">�</button>
+      <button id="closeModalBtn" class="close-modal" type="button" aria-label="Close">×</button>
       <h3 id="commitTitle">Commit scouting data</h3>
       <p class="hint">Choose what to do with the information you entered.</p>
 
       <div class="choice-grid">
         <button id="qrChoiceBtn" type="button" class="primary choice-button">
-          <span class="choice-icon">?</span>
           <span>QR Code</span>
           <small>Generate a QR code from this entry</small>
         </button>
         <button id="syncChoiceBtn" type="button" class="choice-button">
-          <span class="choice-icon">?</span>
           <span>Sync to Sheet</span>
           <small>Send this entry to Google Sheets</small>
         </button>
@@ -127,4 +123,6 @@
   <script src="assets/js/app.js"></script>
 </body>
 </html>
+
+
 
