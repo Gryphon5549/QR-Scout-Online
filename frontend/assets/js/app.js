@@ -1,7 +1,6 @@
 (() => {
   const $ = (id) => document.getElementById(id);
   const STORAGE_KEY = "qrscoutSavedState";
-  const DEFAULT_SYNC_URL = "https://qr-scout-online.onrender.com/api/sheets-sync";
   let config = null;
   let lastPayload = "";
 
@@ -93,7 +92,7 @@
       formState[code] = value;
     });
 
-    const currentSyncUrl = $("googleFormUrl") ? ($("googleFormUrl").value.trim() || DEFAULT_SYNC_URL) : (config.googleFormUrl || DEFAULT_SYNC_URL);
+    const currentSyncUrl = $("googleFormUrl") ? $("googleFormUrl").value.trim() : (config.googleFormUrl || "");
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ config, form: formState, syncUrl: currentSyncUrl }));
   }
 
@@ -360,31 +359,35 @@
 
     const formUrl = $("googleFormUrl").value.trim();
     const sheetTabName = $("sheetTabName").value.trim() || "Sheet1";
-    const finalUrl = formUrl || DEFAULT_SYNC_URL;
+
+    if (!formUrl) {
+      setGoogleFormStatus("Enter a backend URL before saving it.", true);
+      return;
+    }
 
     try {
-      new URL(finalUrl);
+      new URL(formUrl);
     } catch (err) {
       setGoogleFormStatus("The script URL is not valid.", true);
       return;
     }
 
-    config.googleFormUrl = finalUrl;
+    config.googleFormUrl = formUrl;
     config.googleSheetTab = sheetTabName;
-    $("googleFormUrl").value = finalUrl;
+    $("googleFormUrl").value = formUrl;
     $("sheetTabName").value = sheetTabName;
     setGoogleFormStatus("Script sync saved.", false);
     saveCurrentState();
   }
 
   function clearGoogleFormSync() {
-    $("googleFormUrl").value = DEFAULT_SYNC_URL;
+    $("googleFormUrl").value = "";
     $("sheetTabName").value = $("sheetTabName").value.trim() || "Sheet1";
     if (config) {
-      config.googleFormUrl = DEFAULT_SYNC_URL;
-      config.googleSheetTab = $("sheetTabName").value.trim() || "Sheet1";
+      delete config.googleFormUrl;
+      delete config.googleSheetTab;
     }
-    setGoogleFormStatus("Default sync URL restored.", false);
+    setGoogleFormStatus("Sync URL cleared.", false);
     saveCurrentState();
   }
 
@@ -523,7 +526,6 @@
   function applyConfig(obj) {
     if (!obj || !Array.isArray(obj.sections)) throw new Error("This JSON does not contain a sections array.");
     config = obj;
-    config.googleFormUrl = config.googleFormUrl || DEFAULT_SYNC_URL;
     $("welcomeSection").classList.add("hidden");
     $("scoutingPage").classList.remove("hidden");
     renderForm();
@@ -532,8 +534,8 @@
     $("managerStatus").className = "status ok";
     setStatus("Configuration loaded. Fill in the fields, then generate a QR code.");
     $("sheetTabName").value = config.googleSheetTab || "Sheet1";
-    $("googleFormUrl").value = config.googleFormUrl || DEFAULT_SYNC_URL;
-    setGoogleFormStatus("Script sync loaded.", false);
+    $("googleFormUrl").value = config.googleFormUrl || "";
+    setGoogleFormStatus(config.googleFormUrl ? "Script sync loaded." : "No sync configured.", false);
     saveCurrentState();
   }
 
@@ -541,7 +543,6 @@
     const saved = getSavedState();
     if (!saved || !saved.config || !Array.isArray(saved.config.sections)) return;
     config = saved.config;
-    config.googleFormUrl = config.googleFormUrl || saved.syncUrl || DEFAULT_SYNC_URL;
     $("welcomeSection").classList.add("hidden");
     $("scoutingPage").classList.remove("hidden");
     renderForm();
@@ -549,7 +550,7 @@
     $("managerStatus").textContent = "Saved scouting data restored.";
     $("managerStatus").className = "status ok";
     $("sheetTabName").value = config.googleSheetTab || "Sheet1";
-    $("googleFormUrl").value = config.googleFormUrl || DEFAULT_SYNC_URL;
+    $("googleFormUrl").value = config.googleFormUrl || saved.syncUrl || "";
     setStatus("Saved progress restored.");
   }
 
@@ -651,8 +652,8 @@
   });
 
   const syncInput = $("googleFormUrl");
-  if (syncInput && !syncInput.value) {
-    syncInput.value = DEFAULT_SYNC_URL;
+  if (syncInput) {
+    syncInput.value = "";
   }
 
   const saved = getSavedState();
@@ -660,4 +661,5 @@
     restoreSavedConfiguration();
   }
 })();
+
 
