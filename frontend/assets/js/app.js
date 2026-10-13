@@ -613,7 +613,9 @@
   }
 
   function setActiveTab(which) {
-    $("navAppBtn").classList.toggle("active", which === "app");
+    $("navAppBtn").classList.toggle("active", which === "home");
+    const scoutBtn = $("navScoutBtn");
+    if (scoutBtn) scoutBtn.classList.toggle("active", which === "scout");
     $("navGuideBtn").classList.toggle("active", which === "guide");
   }
 
@@ -621,8 +623,10 @@
     const hash = (location.hash || "").toLowerCase();
     if (hash === "#/start-guide" || hash === "#/startguide") {
       showStartGuide();
+    } else if (hash === "#/scout") {
+      showScoutPage();
     } else {
-      showScoutApp();
+      showHome();
     }
   }
 
@@ -635,28 +639,36 @@
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  function showScoutApp() {
+  function showHome() {
     $("startGuideSection").classList.add("hidden");
+    $("welcomeSection").classList.remove("hidden");
     $("howToUseSection").classList.remove("hidden");
-    if (config) {
-      $("scoutingPage").classList.remove("hidden");
-      $("welcomeSection").classList.add("hidden");
-    } else {
-      $("welcomeSection").classList.remove("hidden");
-      $("scoutingPage").classList.add("hidden");
+    $("scoutingPage").classList.add("hidden");
+    setActiveTab("home");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function showScoutPage() {
+    if (!config) {
+      if ((location.hash || "").toLowerCase() !== "#/home") {
+        history.replaceState(null, "", "#/home");
+      }
+      showHome();
+      return;
     }
-    setActiveTab("app");
+    $("startGuideSection").classList.add("hidden");
+    $("welcomeSection").classList.add("hidden");
+    $("howToUseSection").classList.remove("hidden");
+    $("scoutingPage").classList.remove("hidden");
+    setActiveTab("scout");
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   function goHome() {
-    $("startGuideSection").classList.add("hidden");
-    $("howToUseSection").classList.remove("hidden");
-    $("welcomeSection").classList.remove("hidden");
-    $("scoutingPage").classList.add("hidden");
+    showHome();
     $("configStatus").textContent = "Ready for a new config.";
     $("configStatus").className = "status";
-    setActiveTab("app");
-    if (location.hash !== "#/home") {
+    if ((location.hash || "").toLowerCase() !== "#/home") {
       history.replaceState(null, "", "#/home");
     }
   }
@@ -675,6 +687,10 @@
     $("googleFormUrl").value = config.googleFormUrl || "";
     setGoogleFormStatus(config.googleFormUrl ? "Script sync loaded." : "No sync configured.", false);
     saveCurrentState();
+    setActiveTab("scout");
+    if ((location.hash || "").toLowerCase() !== "#/scout") {
+      location.hash = "#/scout";
+    }
   }
 
   function restoreSavedConfiguration() {
@@ -748,7 +764,8 @@
   });
   $("modalDownloadBtn").addEventListener("click", downloadQr);
   $("modalBackBtn").addEventListener("click", backToChoices);
-  $("navAppBtn").addEventListener("click", showScoutApp);
+  $("navAppBtn").addEventListener("click", showHome);
+  $("navScoutBtn").addEventListener("click", showScoutPage);
   $("navGuideBtn").addEventListener("click", showStartGuide);
   window.addEventListener("hashchange", route);
   $("downloadExampleConfigBtn").addEventListener("click", () => {
@@ -815,6 +832,9 @@
   const saved = getSavedState();
   if (saved && saved.config && Array.isArray(saved.config.sections)) {
     restoreSavedConfiguration();
+    if (!location.hash) {
+      history.replaceState(null, "", "#/scout");
+    }
   }
   route();
 })();
