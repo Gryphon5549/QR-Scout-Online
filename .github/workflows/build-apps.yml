@@ -56,6 +56,17 @@ jobs:
             Linux)   npx electron-builder --linux AppImage deb --x64 --arm64 2>&1 | tee build.log ;;
           esac
 
+      - name: Normalize Linux artifact names
+        if: runner.os == 'Linux'
+        # electron-builder names Linux x64 artifacts x86_64 (Debian style) and
+        # amd64 (deb). The site's download links use stable x64 names.
+        run: |
+          for f in dist-app/QRScout-linux-x86_64.* dist-app/QRScout-linux-amd64.*; do
+            base=$(basename "$f" | sed -e 's/x86_64/x64/' -e 's/amd64/x64/')
+            mv -f "$f" "dist-app/$base"
+          done
+          ls -l dist-app
+
       - name: Publish build log to ci-debug branch (on failure)
         if: failure()
         env:
