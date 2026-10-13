@@ -61,11 +61,20 @@ jobs:
         # electron-builder names Linux x64 artifacts x86_64 (Debian style) and
         # amd64 (deb). The site's download links use stable x64 names.
         run: |
-          for f in dist-app/QRScout-linux-x86_64.* dist-app/QRScout-linux-amd64.*; do
+          cd dist-app || { echo "FATAL: dist-app not found"; exit 1; }
+          echo "--- dist-app contents before normalization ---"
+          ls -1
+          for f in QRScout-linux-x86_64.* QRScout-linux-amd64.*; do
+            if [ ! -e "$f" ]; then
+              echo "no match: $f (skip)"
+              continue
+            fi
             base=$(basename "$f" | sed -e 's/x86_64/x64/' -e 's/amd64/x64/')
-            mv -f "$f" "dist-app/$base"
+            mv -f "$f" "$base"
+            echo "renamed: $f -> $base"
           done
-          ls -l dist-app
+          echo "--- dist-app contents after normalization ---"
+          ls -l
 
       - name: Publish build log to ci-debug branch (on failure)
         if: failure()
