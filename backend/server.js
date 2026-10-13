@@ -135,45 +135,112 @@ app.post('/api/feedback', async (req, res) => {
       return res.status(400).json({ ok: false, error: 'Email address looks invalid.' });
     }
 
+    // Two delivery paths. The sheet path uses the service account that is
+    // already configured for scouting sync, so feedback works with no extra
+    // setup. The email path is optional and only runs when SMTP is set up.
+    let savedToSheet = false;
+    let emailed = false;
+    const problems = [];
+
+    const sheetId = process.env.GOOGLE_SHEET_ID;
+    const sheetName = process.env.FEEDBACK_SHEET_NAME || 'Feedback';
+    if (sheetId) {
+      try {
+        const sheets = await getSheetsClient();
+        const metadata = await sheets.spreadsheets.get({ spreadsheetId: sheetId });
+        const exists = (metadata.data.sheets || []).some((sheet) => sheet.properties && sheet.properties.title === sheetName);
+
+        if (!exists) {
+          await sheets.spreadsheets.batchUpdate({
+            spreadsheetId: sheetId,
+            requestBody: {
+              requests: [{
+                addSheet: {
+                  properties: {
+                    title: sheetName,
+                    sheetType: 'GRID',
+                    gridProperties: { rowCount: 1000, columnCount: 10 }
+                  }
+                }
+              }]
+            }
+          });
+          await sheets.spreadsheets.values.update({
+            spreadsheetId: sheetId,
+            range: `${sheetName}!A1`,
+            valueInputOption: 'RAW',
+            requestBody: {
+              values: [['Timestamp', 'Name', 'Team number', 'Email', 'Feedback']]
+            }
+          });
+        }
+
+        await sheets.spreadsheets.values.append({
+          spreadsheetId: sheetId,
+          range: `${sheetName}!A1`,
+          valueInputOption: 'RAW',
+          insertDataOption: 'INSERT_ROWS',
+          requestBody: {
+            values: [[new Date().toISOString(), name, teamNumber, email, feedback]]
+          }
+        });
+        savedToSheet = true;
+      } catch (sheetError) {
+        console.error('feedback sheet append failed:', sheetError);
+        problems.push(`sheet: ${sheetError && sheetError.message ? sheetError.message : String(sheetError)}`);
+      }
+    }
+
     const toEmail = process.env.FEEDBACK_TO_EMAIL;
     const smtpHost = process.env.SMTP_HOST;
     const smtpPort = Number(process.env.SMTP_PORT) || 465;
     const smtpUser = process.env.SMTP_USER;
     const smtpPass = process.env.SMTP_PASS;
 
-    if (!toEmail || !smtpHost || !smtpUser || !smtpPass) {
-      return res.status(503).json({
-        ok: false,
-        error: 'Feedback email is not configured on the server yet (set FEEDBACK_TO_EMAIL, SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS).'
-      });
+    if (toEmail && smtpHost && smtpUser && smtpPass) {
+      try {
+        const transporter = nodemailer.createTransport({
+          host: smtpHost,
+          port: smtpPort,
+          secure: smtpPort === 465,
+          auth: { user: smtpUser, pass: smtpPass }
+        });
+
+        const subject = `QR Scout feedback${teamNumber ? ` — team ${teamNumber}` : ''}${name ? ` from ${name}` : ''}`;
+        const text = [
+          `Name: ${name || '(not provided)'}`,
+          `Team number: ${teamNumber || '(not provided)'}`,
+          `Email: ${email || '(not provided)'}`,
+          '',
+          'Feedback:',
+          feedback
+        ].join('\n');
+
+        await transporter.sendMail({
+          from: `"QR Scout Feedback" <${smtpUser}>`,
+          to: toEmail,
+          replyTo: email || undefined,
+          subject,
+          text
+        });
+        emailed = true;
+      } catch (mailError) {
+        console.error('feedback email failed:', mailError);
+        problems.push(`email: ${mailError && mailError.message ? mailError.message : String(mailError)}`);
+      }
     }
 
-    const transporter = nodemailer.createTransport({
-      host: smtpHost,
-      port: smtpPort,
-      secure: smtpPort === 465,
-      auth: { user: smtpUser, pass: smtpPass }
+    if (savedToSheet || emailed) {
+      const how = emailed ? 'emailed to you' : 'saved to the Feedback tab in your Google Sheet';
+      return res.json({ ok: true, status: `Feedback received (${how}). Thank you!` });
+    }
+
+    return res.status(500).json({
+      ok: false,
+      error: problems.length
+        ? `Could not deliver feedback — ${problems.join('; ')}`
+        : 'Feedback is not configured on the server yet: set GOOGLE_SHEET_ID (saves to a Feedback tab) and/or the SMTP_* variables (sends an email).'
     });
-
-    const subject = `QR Scout feedback${teamNumber ? ` — team ${teamNumber}` : ''}${name ? ` from ${name}` : ''}`;
-    const text = [
-      `Name: ${name || '(not provided)'}`,
-      `Team number: ${teamNumber || '(not provided)'}`,
-      `Email: ${email || '(not provided)'}`,
-      '',
-      'Feedback:',
-      feedback
-    ].join('\n');
-
-    await transporter.sendMail({
-      from: `"QR Scout Feedback" <${smtpUser}>`,
-      to: toEmail,
-      replyTo: email || undefined,
-      subject,
-      text
-    });
-
-    return res.json({ ok: true, status: 'Feedback received. Thank you!' });
   } catch (error) {
     console.error('feedback failed:', error);
     return res.status(500).json({

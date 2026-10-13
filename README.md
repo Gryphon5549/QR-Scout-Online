@@ -82,8 +82,10 @@ Fill out a form, click Commit, and then click Sync to Sheet.
 
 If the backend works, a new row should appear in the target Google Sheet.
 
-### 7) Configure the Feedback tab (optional)
-The **Feedback** tab emails submissions to you through SMTP. Set these in `backend/.env` (and on your host, e.g. Render):
+### 7) How feedback is delivered
+Feedback submissions are appended to a **Feedback** tab in the Google Sheet behind `GOOGLE_SHEET_ID` (the tab is created automatically with headers). This uses the same service account as scouting sync, so it works with no extra setup.
+
+To ALSO get feedback by email, set these in `backend/.env` (and on your host, e.g. Render):
 
 ```env
 FEEDBACK_TO_EMAIL=your_email_here
@@ -93,7 +95,7 @@ SMTP_USER=your_smtp_username_here
 SMTP_PASS=your_smtp_password_here
 ```
 
-For Gmail, create an **App Password** (Google Account → Security → 2-Step Verification → App passwords) and use it as `SMTP_PASS`. Until these are set, the Feedback tab shows a clear "not configured" error instead of sending.
+For Gmail, create an **App Password** (Google Account → Security → 2-Step Verification → App passwords) and use it as `SMTP_PASS`. If SMTP is not set up, feedback still arrives in the sheet. The sheet tab name can be changed with `FEEDBACK_SHEET_NAME` (default `Feedback`).
 
 ## Important
 
