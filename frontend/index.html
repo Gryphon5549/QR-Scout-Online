@@ -8,9 +8,15 @@
 </head>
 <body>
   <header class="topbar">
-    <div id="brandHomeBtn" class="brand-block" role="button" tabindex="0" aria-label="Return to the welcome screen">
-      <h1>2549 Scouting</h1>
-      <div class="brand-mark">2549</div>
+    <div class="topbar-inner">
+      <div id="brandHomeBtn" class="brand-block" role="button" tabindex="0" aria-label="Return to the welcome screen">
+        <h1>2549 Scouting</h1>
+        <div class="brand-mark">2549</div>
+      </div>
+      <nav class="tabs" aria-label="Pages">
+        <button id="navAppBtn" type="button" class="tab-btn active">Home</button>
+        <button id="navGuideBtn" type="button" class="tab-btn">Start guide</button>
+      </nav>
     </div>
   </header>
 
@@ -23,7 +29,7 @@
       <div class="upload-box">
         <label for="configFile">Import config</label>
         <input id="configFile" type="file" accept=".json,application/json">
-        <button id="loadExample" type="button" class="secondary">Load sample</button>
+        <button id="loadExample" type="button" class="secondary">Load base form</button>
       </div>
 
       <div id="configStatus" class="status">No configuration loaded yet.</div>
@@ -91,6 +97,115 @@
         <li>Use the QR code or saved data to keep a backup.</li>
       </ol>
     </section>
+  <section id="startGuideSection" class="panel start-guide hidden" aria-label="Start guide">
+    <div class="eyebrow">Setup</div>
+    <h2>Start guide</h2>
+    <p>This guide connects QR Scout to a Google Sheet. You will create a Google Cloud <strong>service account</strong> (the service email and its key), host the backend on <strong>Render</strong>, then paste the backend URL into the app so you can <strong>submit</strong> scouting data straight to your sheet.</p>
+
+    <h3 class="guide-heading">Part 1 - Create the Google service account</h3>
+    <div class="guide-steps">
+      <div class="step-card">
+        <div class="step-number">1</div>
+        <h3>Open Google Cloud Console</h3>
+        <p>Go to <code>console.cloud.google.com</code> and create a new project, or select an existing one.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-number">2</div>
+        <h3>Enable the Google Sheets API</h3>
+        <p>Open <strong>APIs &amp; Services &rarr; Library</strong>, search for <strong>Google Sheets API</strong>, and click <strong>Enable</strong>.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-number">3</div>
+        <h3>Create the service account</h3>
+        <p>Open <strong>APIs &amp; Services &rarr; Credentials &rarr; Create Credentials &rarr; Service account</strong>. Give it a name and finish creating it. This is your service email, which looks like <code>your-name@your-project.iam.gserviceaccount.com</code>.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-number">4</div>
+        <h3>Create a JSON key</h3>
+        <p>Click the new service account, open the <strong>Keys</strong> tab, then <strong>Add Key &rarr; Create new key &rarr; JSON &rarr; Create</strong>. A <code>.json</code> file downloads. Keep it safe - it contains your private key.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-number">5</div>
+        <h3>Note the two values you need</h3>
+        <p>Open the JSON file and copy these two fields:</p>
+        <ul>
+          <li><code>client_email</code> - the service email.</li>
+          <li><code>private_key</code> - the long key starting with <code>-----BEGIN PRIVATE KEY-----</code>.</li>
+        </ul>
+      </div>
+      <div class="step-card">
+        <div class="step-number">6</div>
+        <h3>Create a sheet and share it</h3>
+        <p>Create a Google Sheet and copy its ID from the URL (the part between <code>/d/</code> and <code>/edit</code>). Then click <strong>Share</strong>, paste the <code>client_email</code>, give it <strong>Editor</strong> access, and send. Without this the backend cannot write rows.</p>
+      </div>
+    </div>
+
+    <h3 class="guide-heading">Part 2 - Attach it to Render</h3>
+    <div class="guide-steps">
+      <div class="step-card">
+        <div class="step-number">7</div>
+        <h3>Push the code to GitHub</h3>
+        <p>Commit this repo (including the <code>backend/</code> folder) and push it to GitHub.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-number">8</div>
+        <h3>Create a Web Service on Render</h3>
+        <p>On <code>render.com</code> choose <strong>New &rarr; Web Service</strong> and connect your repo. Set the <strong>Root Directory</strong> to <code>backend</code>, the <strong>Build Command</strong> to <code>npm install</code>, and the <strong>Start Command</strong> to <code>npm start</code>.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-number">9</div>
+        <h3>Add the environment variables</h3>
+        <p>In the Render <strong>Environment</strong> tab, add these variables using the values from your JSON key:</p>
+        <pre><code>GOOGLE_SHEET_ID=your_sheet_id_here
+GOOGLE_SERVICE_ACCOUNT_EMAIL=your-name@your-project.iam.gserviceaccount.com
+GOOGLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...your key...\n-----END PRIVATE KEY-----\n"
+SHEET_NAME=Scouting</code></pre>
+        <div class="callout">
+          <h3>Private key formatting</h3>
+          <p>Paste the <code>private_key</code> exactly as it appears in the JSON file, keeping the <code>\n</code> sequences on a single line and wrapping the whole value in double quotes as shown. The server converts the <code>\n</code> into real line breaks for you.</p>
+        </div>
+      </div>
+      <div class="step-card">
+        <div class="step-number">10</div>
+        <h3>Deploy and copy the URL</h3>
+        <p>Click <strong>Create Web Service</strong> and wait for the deploy. Open <code>https://your-app.onrender.com/health</code> - you should see <code>{"ok":true,...}</code>. Your sync endpoint is:</p>
+        <pre><code>https://your-app.onrender.com/api/sync-sheet</code></pre>
+      </div>
+    </div>
+
+    <h3 class="guide-heading">Part 3 - Submit to your Google Sheet</h3>
+    <div class="guide-steps">
+      <div class="step-card">
+        <div class="step-number">11</div>
+        <h3>Open the app over HTTP</h3>
+        <p>Open the site from GitHub Pages or <code>http://localhost</code>, not as a local <code>file://</code> path.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-number">12</div>
+        <h3>Load a config</h3>
+        <p>On the welcome screen, click <strong>Import config</strong> to upload your JSON, or <strong>Load base form</strong> to start from the blank template.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-number">13</div>
+        <h3>Save the sync URL</h3>
+        <p>Click <strong>Show sync</strong>, paste your Render endpoint into <strong>Backend URL</strong>, optionally set a <strong>Tab name</strong>, then click <strong>Save sync</strong>.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-number">14</div>
+        <h3>Commit and sync</h3>
+        <p>Fill out the form, click <strong>Commit</strong>, then choose <strong>Sync to Sheet</strong>. A new row appears in your Google Sheet. You can also generate a QR code for an offline backup.</p>
+      </div>
+    </div>
+
+    <div class="callout">
+      <h3>Troubleshooting</h3>
+      <ul>
+        <li><strong>Missing ... in environment variables</strong> - a Render variable is empty or misspelled.</li>
+        <li><strong>Permission or 403 errors</strong> - the sheet was not shared with the <code>client_email</code> as an Editor.</li>
+        <li><strong>CORS or network errors</strong> - serve the site over HTTP/HTTPS and make sure the Backend URL ends in <code>/api/sync-sheet</code>.</li>
+      </ul>
+    </div>
+  </section>
   </main>
 
   <div id="commitModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="commitTitle">

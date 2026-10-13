@@ -14,7 +14,11 @@
 
 * { box-sizing: border-box; }
 
-html { scroll-behavior: smooth; }
+html {
+  scroll-behavior: smooth;
+  background-color: #0b1220;
+  overscroll-behavior: none;
+}
 
 body {
   margin: 0;
@@ -36,6 +40,7 @@ button {
   border-radius: 10px;
   padding: 11px 15px;
   font-weight: 700;
+  transition: filter 0.15s ease, background-color 0.15s ease;
 }
 
 button.primary {
@@ -48,7 +53,15 @@ button.secondary {
   border-color: rgba(247, 167, 74, 0.45);
 }
 
-button:hover { filter: brightness(1.05); }
+button:hover {
+  filter: brightness(1.14);
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+button:active {
+  filter: brightness(1.26);
+  background-color: rgba(255, 255, 255, 0.2);
+}
 
 .topbar {
   padding: 18px 20px;
@@ -679,7 +692,69 @@ input[type="range"] {
   }
 }
 
+.topbar-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
 
+.topbar-inner .brand-block {
+  max-width: none;
+  width: auto;
+  margin: 0;
+  justify-content: flex-start;
+}
 
+.start-guide h2 { margin: 6px 0 10px; }
+.start-guide > p { color: var(--muted); max-width: 72ch; }
 
+.guide-heading {
+  margin: 26px 0 14px;
+  color: var(--text);
+  font-size: 1.2rem;
+  border-left: 3px solid var(--orange);
+  padding-left: 10px;
+}
 
+.guide-steps {
+  display: grid;
+  gap: 14px;
+}
+
+.guide-steps .step-card h3 { font-size: 1.05rem; }
+
+.start-guide code {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1px 6px;
+  font: 13px/1.4 ui-monospace, SFMono-Regular, Consolas, monospace;
+  color: var(--team-gold);
+  word-break: break-word;
+}
+
+.start-guide pre {
+  background: var(--panel-strong);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  overflow-x: auto;
+  margin: 10px 0 0;
+}
+
+.start-guide pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--text);
+  display: block;
+  white-space: pre;
+  word-break: normal;
+}
+
+.start-guide .step-card ul { margin: 8px 0 0; padding-left: 18px; color: var(--muted); display: grid; gap: 6px; }
+.start-guide .callout ul { margin-top: 6px; }
