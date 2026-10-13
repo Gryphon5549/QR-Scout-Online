@@ -1,6 +1,10 @@
 (() => {
   const $ = (id) => document.getElementById(id);
   const STORAGE_KEY = "qrscoutSavedState";
+  // Shared backend that writes to Google Sheets, and the service account email
+  // that each user's sheet must be shared with (as an Editor). Set these once.
+  const BACKEND_URL = "https://YOUR-BACKEND.onrender.com/api/sync-sheet";
+  const SERVICE_EMAIL = "your-service-account@your-project.iam.gserviceaccount.com";
   let config = null;
   let lastPayload = "";
   let shouldAdvanceMatch = false;
@@ -93,8 +97,9 @@
       formState[code] = value;
     });
 
-    const currentSyncUrl = $("googleFormUrl") ? $("googleFormUrl").value.trim() : (config.googleFormUrl || "");
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ config, form: formState, syncUrl: currentSyncUrl }));
+    const currentSheetId = $("googleSheetId") ? $("googleSheetId").value.trim() : (config.googleSheetId || "");
+    const currentSheetTab = $("sheetTabName") ? $("sheetTabName").value.trim() : (config.googleSheetTab || "Sheet1");
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ config, form: formState, sheetId: currentSheetId, sheetTab: currentSheetTab }));
   }
 
   function applySavedValues() {
@@ -407,48 +412,41 @@
 
   function saveGoogleFormSync() {
     if (!config) {
-      setGoogleFormStatus("Load a scouting configuration before saving a sync endpoint.", true);
+      setGoogleFormStatus("Load a scouting configuration before saving your sheet.", true);
       return;
     }
 
-    const formUrl = $("googleFormUrl").value.trim();
+    const sheetId = $("googleSheetId").value.trim();
     const sheetTabName = $("sheetTabName").value.trim() || "Sheet1";
 
-    if (!formUrl) {
-      setGoogleFormStatus("Enter a backend URL before saving it.", true);
+    if (!sheetId) {
+      setGoogleFormStatus("Enter your Google Sheet ID before saving.", true);
       return;
     }
 
-    try {
-      new URL(formUrl);
-    } catch (err) {
-      setGoogleFormStatus("The script URL is not valid.", true);
-      return;
-    }
-
-    config.googleFormUrl = formUrl;
+    config.googleSheetId = sheetId;
     config.googleSheetTab = sheetTabName;
-    $("googleFormUrl").value = formUrl;
+    $("googleSheetId").value = sheetId;
     $("sheetTabName").value = sheetTabName;
-    setGoogleFormStatus("Script sync saved.", false);
+    setGoogleFormStatus("Sheet saved. Ready to sync.", false);
     saveCurrentState();
   }
 
   function clearGoogleFormSync() {
-    $("googleFormUrl").value = "";
+    $("googleSheetId").value = "";
     $("sheetTabName").value = $("sheetTabName").value.trim() || "Sheet1";
     if (config) {
-      delete config.googleFormUrl;
+      delete config.googleSheetId;
       delete config.googleSheetTab;
     }
-    setGoogleFormStatus("Sync URL cleared.", false);
+    setGoogleFormStatus("Sheet cleared.", false);
     saveCurrentState();
   }
 
   function syncToGoogleForm() {
     hideChoices();
-    if (!config || !config.googleFormUrl) {
-      setModalStatus("Add the script URL in the sync panel first.", true);
+    if (!config || !config.googleSheetId) {
+      setModalStatus("Add your Google Sheet ID in the sync panel first.", true);
       return;
     }
 
@@ -457,13 +455,20 @@
       return;
     }
 
+    if (!BACKEND_URL || BACKEND_URL.indexOf("YOUR-BACKEND") !== -1) {
+      setModalStatus("This site's backend is not configured yet. Ask the site owner to set the BACKEND_URL.", true);
+      return;
+    }
+
+    const scriptUrl = BACKEND_URL;
+
     try {
       const payload = collectData();
-      const scriptUrl = (config.googleFormUrl || "").trim();
-      const sheetTabName = (config.googleSheetTab || $("sheetTabName").value || "Sheet1").trim();
+      const sheetId = (config.googleSheetId || "").trim();
+      const sheetName = (config.googleSheetTab || $("sheetTabName").value || "Sheet1").trim();
 
-      if (!scriptUrl) {
-        setModalStatus("Add the backend API URL before syncing.", true);
+      if (!sheetId) {
+        setModalStatus("Add your Google Sheet ID before syncing.", true);
         return;
       }
 
@@ -473,7 +478,8 @@
         createdAt: payload.createdAt,
         data: payload.data,
         row: Object.values(payload.data),
-        sheetTab: sheetTabName
+        sheetId: sheetId,
+        sheetName: sheetName
       });
 
       setModalStatus("Sending scouting data to the script...", false, true);
@@ -503,20 +509,20 @@
           throw new Error(parsed.error || "Script request rejected by the backend.");
         }
 
-        setModalStatus("Scouting data sent successfully.", false, true);
+        setModalStatus("Scouting data sent to your Google Sheet.", false, true);
         shouldAdvanceMatch = true;
       }).catch((err) => {
-        const raw = err && err.message ? err.message : "Could not sync to the script.";
+        const raw = err && err.message ? err.message : "Could not sync to your sheet.";
         const fallbackCsv = downloadCsvFallback(payload);
         const detailed = getSyncFailureDetails(scriptUrl, raw);
         setModalStatus(`${detailed} Manual backup downloaded as CSV so you can import it into Google Sheets.`, true);
-        console.warn("Script sync failed. CSV fallback created.", { raw, fallbackCsv, scriptUrl, sheetTabName });
+        console.warn("Script sync failed. CSV fallback created.", { raw, fallbackCsv, scriptUrl, sheetName });
       });
     } catch (err) {
-      const raw = err && err.message ? err.message : "Could not sync to the script.";
+      const raw = err && err.message ? err.message : "Could not sync to your sheet.";
       const payload = collectData();
       const fallbackCsv = downloadCsvFallback(payload);
-      const detailed = getSyncFailureDetails((config && config.googleFormUrl) || "", raw);
+      const detailed = getSyncFailureDetails(BACKEND_URL, raw);
       setModalStatus(`${detailed} Manual backup downloaded as CSV so you can import it into Google Sheets.`, true);
       console.warn("Script sync exception. CSV fallback created.", { raw, fallbackCsv, config });
     }
@@ -684,8 +690,8 @@
     $("managerStatus").className = "status ok";
     setStatus("Configuration loaded. Fill in the fields, then generate a QR code.");
     $("sheetTabName").value = config.googleSheetTab || "Sheet1";
-    $("googleFormUrl").value = config.googleFormUrl || "";
-    setGoogleFormStatus(config.googleFormUrl ? "Script sync loaded." : "No sync configured.", false);
+    $("googleSheetId").value = config.googleSheetId || "";
+    setGoogleFormStatus(config.googleSheetId ? "Sheet saved. Ready to sync." : "No sheet configured yet.", false);
     saveCurrentState();
     setActiveTab("scout");
     if ((location.hash || "").toLowerCase() !== "#/scout") {
@@ -704,7 +710,7 @@
     $("managerStatus").textContent = "Saved scouting data restored.";
     $("managerStatus").className = "status ok";
     $("sheetTabName").value = config.googleSheetTab || "Sheet1";
-    $("googleFormUrl").value = config.googleFormUrl || saved.syncUrl || "";
+    $("googleSheetId").value = config.googleSheetId || saved.sheetId || "";
     setStatus("Saved progress restored.");
   }
 
@@ -771,16 +777,6 @@
   $("downloadExampleConfigBtn").addEventListener("click", () => {
     downloadBlob("example-config.json", JSON.stringify(sampleConfig, null, 2), "application/json");
   });
-  $("downloadEnvBtn").addEventListener("click", () => {
-    const env = [
-      "PORT=3001",
-      "GOOGLE_SHEET_ID=your_google_sheet_id_here",
-      "GOOGLE_SERVICE_ACCOUNT_EMAIL=your-service-account@your-project.iam.gserviceaccount.com",
-      "GOOGLE_PRIVATE_KEY=\"-----BEGIN PRIVATE KEY-----\\nYOUR_PRIVATE_KEY_HERE\\n-----END PRIVATE KEY-----\\n\"",
-      "SHEET_NAME=Scouting"
-    ].join("\n") + "\n";
-    downloadBlob(".env.example", env, "text/plain;charset=utf-8");
-  });
 
   $("formArea").addEventListener("input", saveCurrentState);
   $("formArea").addEventListener("change", saveCurrentState);
@@ -824,9 +820,14 @@
     URL.revokeObjectURL(url);
   });
 
-  const syncInput = $("googleFormUrl");
+  const syncInput = $("googleSheetId");
   if (syncInput) {
     syncInput.value = "";
+  }
+
+  const serviceEmailEl = $("serviceAccountEmail");
+  if (serviceEmailEl) {
+    serviceEmailEl.textContent = SERVICE_EMAIL;
   }
 
   const saved = getSavedState();
