@@ -51,10 +51,25 @@ jobs:
           APPIMAGE_EXTRACT_AND_RUN: '1'
         run: |
           case "${{ runner.os }}" in
-            Windows) npx electron-builder --win nsis --x64 --arm64 ;;
-            macOS)   npx electron-builder --mac dmg zip --x64 --arm64 ;;
-            Linux)   npx electron-builder --linux AppImage deb --x64 --arm64 ;;
+            Windows) npx electron-builder --win nsis --x64 --arm64 2>&1 | tee build.log ;;
+            macOS)   npx electron-builder --mac dmg zip --x64 --arm64 2>&1 | tee build.log ;;
+            Linux)   npx electron-builder --linux AppImage deb --x64 --arm64 2>&1 | tee build.log ;;
           esac
+
+      - name: Publish build log to ci-debug branch (on failure)
+        if: failure()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git clone --depth1 "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" debug-repo
+          mkdir -p debug-repo/ci-logs
+          cp build.log "debug-repo/ci-logs/${RUNNER_OS}-build.log" 2>/dev/null || echo "no build.log" > "debug-repo/ci-logs/${RUNNER_OS}-build.log"
+          cd debug-repo
+          git config user.name "ci-debug-bot"
+          git config user.email "ci-debug-bot@users.noreply.github.com"
+          git add ci-logs
+          git commit -m "ci logs: ${RUNNER_OS} run ${GITHUB_RUN_ID}" --allow-empty
+          git push origin HEAD:ci-debug
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
