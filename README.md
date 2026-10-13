@@ -1,6 +1,8 @@
-# QR Scout Online
+# QR Scout Online — 2549 Millerbots Scouting, QR Sheets & Google Sheets
 
-This project is the simplified Team 2549 scouting workflow.
+**2549 Millerbots scouting** workflow — a free **QR scout** / **FRC scouting** app that collects match scouting data on any device, backs it up as **QR sheets**, and syncs scouting data straight into **your own Google Sheets**.
+
+This project is the simplified Team 2549 (Millerbots) scouting workflow — also searchable as *2549 scouting*, *Millerbots 2549*, *QR scout online*, *FRC match scouting*, and *scouting to Google Sheets*.
 
 ## New architecture
 
