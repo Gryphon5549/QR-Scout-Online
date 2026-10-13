@@ -83,19 +83,26 @@ Fill out a form, click Commit, and then click Sync to Sheet.
 If the backend works, a new row should appear in the target Google Sheet.
 
 ### 7) How feedback is delivered
-Feedback submissions are appended to a **Feedback** tab in the Google Sheet behind `GOOGLE_SHEET_ID` (the tab is created automatically with headers). This uses the same service account as scouting sync, so it works with no extra setup.
+Every feedback submission is delivered two ways:
 
-To ALSO get feedback by email, set these in `backend/.env` (and on your host, e.g. Render):
+1. **Google Sheet** — appended to a **Feedback** tab in the Google Sheet behind `GOOGLE_SHEET_ID` (created automatically with headers), using the same service account as scouting sync.
+2. **Email to the site owner** — by default through [FormSubmit](https://formsubmit.co) (free, no signup, no SMTP password). **The first-ever submission only sends an activation email** to the owner — click the confirmation link in that email once and every later submission is delivered straight to their inbox.
+
+Optional overrides in `backend/.env` (and on your host, e.g. Render):
 
 ```env
+# Deliver email to a different address (defaults to the project owner):
 FEEDBACK_TO_EMAIL=your_email_here
+# Use your own SMTP server instead of FormSubmit:
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=465
 SMTP_USER=your_smtp_username_here
 SMTP_PASS=your_smtp_password_here
+# Sheet tab name used for delivery (default Feedback):
+FEEDBACK_SHEET_NAME=Feedback
 ```
 
-For Gmail, create an **App Password** (Google Account → Security → 2-Step Verification → App passwords) and use it as `SMTP_PASS`. If SMTP is not set up, feedback still arrives in the sheet. The sheet tab name can be changed with `FEEDBACK_SHEET_NAME` (default `Feedback`).
+For Gmail SMTP, create an **App Password** (Google Account → Security → 2-Step Verification → App passwords) and use it as `SMTP_PASS` — the normal login password will not work.
 
 ## Important
 

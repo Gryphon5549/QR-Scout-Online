@@ -111,6 +111,56 @@ app.post('/api/sync-sheet', async (req, res) => {
   }
 });
 
+// The service account has no inbox, so when SMTP is not configured we deliver
+// owner notifications through FormSubmit (free, no signup). The FIRST submission
+// only sends the owner an activation email — clicking the link once enables
+// delivery of every later submission. The address is assembled from parts so
+// scrapers can't harvest it from this public repo; override via FEEDBACK_TO_EMAIL.
+const DEFAULT_FEEDBACK_EMAIL = ['rileyhh2901', '@', 'gmail.com'].join('');
+
+async function sendFeedbackViaFormSubmit(toEmail, subject, fields) {
+  // FormSubmit rejects server-side requests without a Referer header
+  // ("open this page through a web server"), so send the site's own URL.
+  const response = await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(toEmail)}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+      Referer: 'https://home-grown-code.github.io/QR-Scout-Online/'
+    },
+    body: JSON.stringify({
+      _subject: subject,
+      _captcha: 'false',
+      _template: 'box',
+      _replyto: fields.email && fields.email !== '(not provided)' ? fields.email : undefined,
+      name: fields.name,
+      teamNumber: fields.teamNumber,
+      email: fields.email,
+      message: fields.feedback
+    })
+  });
+
+  let data = {};
+  try {
+    data = await response.json();
+  } catch (parseError) {
+    // Non-JSON response — fall through and judge by status code.
+  }
+
+  const rejected = data.success === 'false' || data.success === false;
+  if (!response.ok || rejected) {
+    const message = data.message || `FormSubmit request failed (HTTP ${response.status}).`;
+    if (/activ/i.test(message)) {
+      // One-time activation: FormSubmit emailed the owner an "Activate Form"
+      // link. Count as accepted — delivery starts once the link is clicked.
+      console.warn(`FormSubmit: waiting for one-time activation — click the "Activate Form" email sent to ${toEmail}.`);
+      return { pendingActivation: true };
+    }
+    throw new Error(message);
+  }
+  return data;
+}
+
 app.post('/api/feedback', async (req, res) => {
   try {
     const payload = req.body || {};
@@ -191,14 +241,22 @@ app.post('/api/feedback', async (req, res) => {
       }
     }
 
-    const toEmail = process.env.FEEDBACK_TO_EMAIL;
+    const toEmail = process.env.FEEDBACK_TO_EMAIL || DEFAULT_FEEDBACK_EMAIL;
     const smtpHost = process.env.SMTP_HOST;
     const smtpPort = Number(process.env.SMTP_PORT) || 465;
     const smtpUser = process.env.SMTP_USER;
     const smtpPass = process.env.SMTP_PASS;
 
-    if (toEmail && smtpHost && smtpUser && smtpPass) {
-      try {
+    const emailSubject = `QR Scout feedback${teamNumber ? ` — team ${teamNumber}` : ''}${name ? ` from ${name}` : ''}`;
+    const emailFields = {
+      name: name || '(not provided)',
+      teamNumber: teamNumber || '(not provided)',
+      email: email || '(not provided)',
+      feedback
+    };
+
+    try {
+      if (smtpHost && smtpUser && smtpPass) {
         const transporter = nodemailer.createTransport({
           host: smtpHost,
           port: smtpPort,
@@ -206,11 +264,10 @@ app.post('/api/feedback', async (req, res) => {
           auth: { user: smtpUser, pass: smtpPass }
         });
 
-        const subject = `QR Scout feedback${teamNumber ? ` — team ${teamNumber}` : ''}${name ? ` from ${name}` : ''}`;
         const text = [
-          `Name: ${name || '(not provided)'}`,
-          `Team number: ${teamNumber || '(not provided)'}`,
-          `Email: ${email || '(not provided)'}`,
+          `Name: ${emailFields.name}`,
+          `Team number: ${emailFields.teamNumber}`,
+          `Email: ${emailFields.email}`,
           '',
           'Feedback:',
           feedback
@@ -220,18 +277,20 @@ app.post('/api/feedback', async (req, res) => {
           from: `"QR Scout Feedback" <${smtpUser}>`,
           to: toEmail,
           replyTo: email || undefined,
-          subject,
+          subject: emailSubject,
           text
         });
-        emailed = true;
-      } catch (mailError) {
-        console.error('feedback email failed:', mailError);
-        problems.push(`email: ${mailError && mailError.message ? mailError.message : String(mailError)}`);
+      } else {
+        await sendFeedbackViaFormSubmit(toEmail, emailSubject, emailFields);
       }
+      emailed = true;
+    } catch (mailError) {
+      console.error('feedback email failed:', mailError);
+      problems.push(`email: ${mailError && mailError.message ? mailError.message : String(mailError)}`);
     }
 
     if (savedToSheet || emailed) {
-      const how = emailed ? 'emailed to you' : 'saved to the Feedback tab in your Google Sheet';
+      const how = emailed ? 'emailed to the site owner' : 'saved to the Feedback tab in your Google Sheet';
       return res.json({ ok: true, status: `Feedback received (${how}). Thank you!` });
     }
 
