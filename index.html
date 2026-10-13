@@ -71,6 +71,7 @@
         <a id="navAppBtn" href="#/home" class="tab-btn active">Home</a>
         <a id="navScoutBtn" href="#/scout" class="tab-btn">Scout</a>
         <a id="navGuideBtn" href="#/start-guide" class="tab-btn">Start guide</a>
+        <a id="navFeedbackBtn" href="#/feedback" class="tab-btn">Feedback</a>
       </nav>
     </div>
   </header>
@@ -218,6 +219,40 @@
         <li><strong>Wrong sheet or wrong tab</strong> - double-check the Sheet ID (it must be the part between <code>/d/</code> and <code>/edit</code>) and the tab name.</li>
       </ul>
     </div>
+  </section>
+
+  <section id="feedbackSection" class="panel feedback-panel hidden" aria-label="Feedback">
+    <div class="eyebrow">Feedback</div>
+    <h2>Send feedback — bugs, ideas, questions</h2>
+    <p>Tell us what's working, what's broken, or what to improve. Only the feedback box is required; the other fields are optional (leave your email if you'd like a reply).</p>
+
+    <form id="feedbackForm">
+      <div class="field">
+        <label for="feedbackName">Name (optional)</label>
+        <input id="feedbackName" name="name" type="text" maxlength="100" placeholder="Your name" autocomplete="name">
+      </div>
+      <div class="field">
+        <label for="feedbackTeam">Team number (optional)</label>
+        <input id="feedbackTeam" name="teamNumber" type="text" maxlength="20" placeholder="e.g. 2549" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="feedbackEmail">Email (optional)</label>
+        <input id="feedbackEmail" name="email" type="email" maxlength="200" placeholder="you@example.com — only used to reply" autocomplete="email">
+      </div>
+      <div class="field">
+        <label for="feedbackText">Feedback (required)</label>
+        <textarea id="feedbackText" name="feedback" required maxlength="5000" placeholder="Describe the bug, idea, or question..."></textarea>
+      </div>
+      <!-- Honeypot: hidden from humans, bots fill it in so we can drop their submission. -->
+      <div class="feedback-hp" aria-hidden="true">
+        <label for="feedbackWebsite">Website</label>
+        <input id="feedbackWebsite" name="website" type="text" tabindex="-1" autocomplete="off">
+      </div>
+      <div class="actions">
+        <button id="feedbackSubmitBtn" type="submit" class="primary">Send feedback</button>
+      </div>
+      <div id="feedbackStatus" class="status">Only the feedback box is required.</div>
+    </form>
   </section>
   </main>
 

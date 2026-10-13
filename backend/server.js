@@ -3,6 +3,7 @@ const cors = require('cors');
 const path = require('path');
 const dotenv = require('dotenv');
 const { google } = require('googleapis');
+const nodemailer = require('nodemailer');
 
 dotenv.config({ path: path.resolve(__dirname, '.env') });
 
@@ -103,6 +104,78 @@ app.post('/api/sync-sheet', async (req, res) => {
     });
   } catch (error) {
     console.error('sync-sheet failed:', error);
+    return res.status(500).json({
+      ok: false,
+      error: error && error.message ? error.message : String(error)
+    });
+  }
+});
+
+app.post('/api/feedback', async (req, res) => {
+  try {
+    const payload = req.body || {};
+    const name = typeof payload.name === 'string' ? payload.name.trim().slice(0, 100) : '';
+    const teamNumber = typeof payload.teamNumber === 'string' ? payload.teamNumber.trim().slice(0, 20) : '';
+    const email = typeof payload.email === 'string' ? payload.email.trim().slice(0, 200) : '';
+    const feedback = typeof payload.feedback === 'string' ? payload.feedback.trim() : '';
+
+    // Honeypot: humans never see this field. If it's filled, it's a bot —
+    // pretend success so the bot doesn't learn, but send nothing.
+    if (typeof payload.website === 'string' && payload.website.trim() !== '') {
+      return res.json({ ok: true, status: 'Feedback received. Thank you!' });
+    }
+
+    if (!feedback) {
+      return res.status(400).json({ ok: false, error: 'Feedback text is required.' });
+    }
+    if (feedback.length > 5000) {
+      return res.status(400).json({ ok: false, error: 'Feedback is too long (max 5000 characters).' });
+    }
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ ok: false, error: 'Email address looks invalid.' });
+    }
+
+    const toEmail = process.env.FEEDBACK_TO_EMAIL;
+    const smtpHost = process.env.SMTP_HOST;
+    const smtpPort = Number(process.env.SMTP_PORT) || 465;
+    const smtpUser = process.env.SMTP_USER;
+    const smtpPass = process.env.SMTP_PASS;
+
+    if (!toEmail || !smtpHost || !smtpUser || !smtpPass) {
+      return res.status(503).json({
+        ok: false,
+        error: 'Feedback email is not configured on the server yet (set FEEDBACK_TO_EMAIL, SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS).'
+      });
+    }
+
+    const transporter = nodemailer.createTransport({
+      host: smtpHost,
+      port: smtpPort,
+      secure: smtpPort === 465,
+      auth: { user: smtpUser, pass: smtpPass }
+    });
+
+    const subject = `QR Scout feedback${teamNumber ? ` — team ${teamNumber}` : ''}${name ? ` from ${name}` : ''}`;
+    const text = [
+      `Name: ${name || '(not provided)'}`,
+      `Team number: ${teamNumber || '(not provided)'}`,
+      `Email: ${email || '(not provided)'}`,
+      '',
+      'Feedback:',
+      feedback
+    ].join('\n');
+
+    await transporter.sendMail({
+      from: `"QR Scout Feedback" <${smtpUser}>`,
+      to: toEmail,
+      replyTo: email || undefined,
+      subject,
+      text
+    });
+
+    return res.json({ ok: true, status: 'Feedback received. Thank you!' });
+  } catch (error) {
+    console.error('feedback failed:', error);
     return res.status(500).json({
       ok: false,
       error: error && error.message ? error.message : String(error)

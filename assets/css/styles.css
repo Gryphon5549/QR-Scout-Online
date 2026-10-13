@@ -384,6 +384,21 @@ input[type="range"] {
   height: auto;
 }
 
+.feedback-panel textarea {
+  min-height: 150px;
+  resize: vertical;
+}
+
+/* Honeypot field: off-screen so humans skip it, bots fill it in. */
+.feedback-hp {
+  position: absolute;
+  left: -9999px;
+  top: -9999px;
+  height: 0;
+  width: 0;
+  overflow: hidden;
+}
+
 .hidden { display: none !important; }
 
 @media (max-width: 900px) {

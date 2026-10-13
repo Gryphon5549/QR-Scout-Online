@@ -4,6 +4,7 @@
   // Shared backend that writes to Google Sheets, and the service account email
   // that each user's sheet must be shared with (as an Editor). Set these once.
   const BACKEND_URL = "https://qr-scout-online.onrender.com/api/sync-sheet";
+  const FEEDBACK_URL = "https://qr-scout-online.onrender.com/api/feedback";
   const SERVICE_EMAIL = "frc-scout@frc-scout-511222.iam.gserviceaccount.com";
   let config = null;
   let lastPayload = "";
@@ -282,6 +283,13 @@
     if (!el) return;
     el.textContent = message;
     el.className = "status" + (isError ? " error" : " ok");
+  }
+
+  function setFeedbackStatus(message, isError = false, inProgress = false, isSuccess = false) {
+    const el = $("feedbackStatus");
+    if (!el) return;
+    el.textContent = message;
+    el.className = "status" + (isError ? " error" : isSuccess || inProgress ? " ok" : "");
   }
 
   function showChoices() {
@@ -623,6 +631,8 @@
     const scoutBtn = $("navScoutBtn");
     if (scoutBtn) scoutBtn.classList.toggle("active", which === "scout");
     $("navGuideBtn").classList.toggle("active", which === "guide");
+    const feedbackBtn = $("navFeedbackBtn");
+    if (feedbackBtn) feedbackBtn.classList.toggle("active", which === "feedback");
   }
 
   function route() {
@@ -631,6 +641,8 @@
       showStartGuide();
     } else if (hash === "#/scout") {
       showScoutPage();
+    } else if (hash === "#/feedback") {
+      showFeedback();
     } else {
       showHome();
     }
@@ -640,13 +652,28 @@
     $("welcomeSection").classList.add("hidden");
     $("scoutingPage").classList.add("hidden");
     $("howToUseSection").classList.add("hidden");
+    $("feedbackSection").classList.add("hidden");
     $("startGuideSection").classList.remove("hidden");
     setActiveTab("guide");
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
+  function showFeedback() {
+    $("welcomeSection").classList.add("hidden");
+    $("scoutingPage").classList.add("hidden");
+    $("howToUseSection").classList.add("hidden");
+    $("startGuideSection").classList.add("hidden");
+    $("feedbackSection").classList.remove("hidden");
+    setActiveTab("feedback");
+    if ((location.hash || "").toLowerCase() !== "#/feedback") {
+      history.replaceState(null, "", "#/feedback");
+    }
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
   function showHome() {
     $("startGuideSection").classList.add("hidden");
+    $("feedbackSection").classList.add("hidden");
     $("welcomeSection").classList.remove("hidden");
     $("howToUseSection").classList.remove("hidden");
     $("scoutingPage").classList.add("hidden");
@@ -666,6 +693,7 @@
       return;
     }
     $("startGuideSection").classList.add("hidden");
+    $("feedbackSection").classList.add("hidden");
     $("welcomeSection").classList.add("hidden");
     $("howToUseSection").classList.remove("hidden");
     $("scoutingPage").classList.remove("hidden");
@@ -686,6 +714,7 @@
     if (!obj || !Array.isArray(obj.sections)) throw new Error("This JSON does not contain a sections array.");
     config = obj;
     $("welcomeSection").classList.add("hidden");
+    $("feedbackSection").classList.add("hidden");
     $("scoutingPage").classList.remove("hidden");
     renderForm();
     $("jsonEditor").value = JSON.stringify(config, null, 2);
@@ -776,7 +805,46 @@
   $("navAppBtn").addEventListener("click", showHome);
   $("navScoutBtn").addEventListener("click", showScoutPage);
   $("navGuideBtn").addEventListener("click", showStartGuide);
+  $("navFeedbackBtn").addEventListener("click", showFeedback);
   window.addEventListener("hashchange", route);
+
+  // Feedback form: name/team/email optional, feedback required. The backend
+  // emails it to the site owner via SMTP.
+  $("feedbackForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const submitBtn = $("feedbackSubmitBtn");
+    const feedbackText = $("feedbackText").value.trim();
+    if (!feedbackText) {
+      setFeedbackStatus("Please enter your feedback before sending.", true);
+      return;
+    }
+    submitBtn.disabled = true;
+    setFeedbackStatus("Sending feedback...", false, true);
+    try {
+      const res = await fetch(FEEDBACK_URL, {
+        method: "POST",
+        mode: "cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: $("feedbackName").value.trim(),
+          teamNumber: $("feedbackTeam").value.trim(),
+          email: $("feedbackEmail").value.trim(),
+          feedback: feedbackText,
+          website: $("feedbackWebsite").value
+        })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || data.ok === false) {
+        throw new Error(data.error || `Server responded with status ${res.status}.`);
+      }
+      setFeedbackStatus(data.status || "Feedback received. Thank you!", false, false, true);
+      $("feedbackForm").reset();
+    } catch (err) {
+      setFeedbackStatus(`Could not send feedback: ${err.message}`, true);
+    } finally {
+      submitBtn.disabled = false;
+    }
+  });
   $("downloadExampleConfigBtn").addEventListener("click", () => {
     downloadBlob("example-config.json", JSON.stringify(sampleConfig, null, 2), "application/json");
   });
