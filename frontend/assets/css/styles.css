@@ -470,6 +470,7 @@ input[type="range"] {
   padding: 10px 16px;
   border-radius: 999px;
   font-weight: 700;
+  text-decoration: none;
 }
 
 .tab-btn.active {

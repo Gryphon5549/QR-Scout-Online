@@ -617,6 +617,15 @@
     $("navGuideBtn").classList.toggle("active", which === "guide");
   }
 
+  function route() {
+    const hash = (location.hash || "").toLowerCase();
+    if (hash === "#/start-guide" || hash === "#/startguide") {
+      showStartGuide();
+    } else {
+      showScoutApp();
+    }
+  }
+
   function showStartGuide() {
     $("welcomeSection").classList.add("hidden");
     $("scoutingPage").classList.add("hidden");
@@ -647,6 +656,9 @@
     $("configStatus").textContent = "Ready for a new config.";
     $("configStatus").className = "status";
     setActiveTab("app");
+    if (location.hash !== "#/home") {
+      history.replaceState(null, "", "#/home");
+    }
   }
 
   function applyConfig(obj) {
@@ -738,6 +750,7 @@
   $("modalBackBtn").addEventListener("click", backToChoices);
   $("navAppBtn").addEventListener("click", showScoutApp);
   $("navGuideBtn").addEventListener("click", showStartGuide);
+  window.addEventListener("hashchange", route);
   $("downloadExampleConfigBtn").addEventListener("click", () => {
     downloadBlob("example-config.json", JSON.stringify(sampleConfig, null, 2), "application/json");
   });
@@ -803,4 +816,5 @@
   if (saved && saved.config && Array.isArray(saved.config.sections)) {
     restoreSavedConfiguration();
   }
+  route();
 })();
