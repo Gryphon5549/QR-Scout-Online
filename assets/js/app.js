@@ -809,11 +809,36 @@
   window.addEventListener("hashchange", route);
 
   // Feedback form: name/team/email optional, feedback required. The backend
-  // emails it to the site owner via SMTP.
+  // saves the row to the owner's Google Sheet; the browser then emails the
+  // owner through FormSubmit — their free plan blocks server-side calls from
+  // cloud hosts, but browser posts from this page are fully supported. The
+  // owner address is assembled from parts so scrapers can't harvest it here.
+  const FEEDBACK_OWNER_EMAIL = ["rileyhh2901", "@", "gmail.com"].join("");
+  function emailFeedbackToOwner(fields) {
+    const subject = `QR Scout feedback${fields.teamNumber ? ` — team ${fields.teamNumber}` : ""}${fields.name ? ` from ${fields.name}` : ""}`;
+    return fetch(`https://formsubmit.co/ajax/${encodeURIComponent(FEEDBACK_OWNER_EMAIL)}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({
+        _subject: subject,
+        _captcha: "false",
+        _template: "box",
+        _replyto: fields.email || undefined,
+        name: fields.name || "(not provided)",
+        teamNumber: fields.teamNumber || "(not provided)",
+        email: fields.email || "(not provided)",
+        message: fields.feedback
+      })
+    });
+  }
   $("feedbackForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     const submitBtn = $("feedbackSubmitBtn");
+    const name = $("feedbackName").value.trim();
+    const teamNumber = $("feedbackTeam").value.trim();
+    const email = $("feedbackEmail").value.trim();
     const feedbackText = $("feedbackText").value.trim();
+    const honeypot = $("feedbackWebsite").value;
     if (!feedbackText) {
       setFeedbackStatus("Please enter your feedback before sending.", true);
       return;
@@ -825,17 +850,19 @@
         method: "POST",
         mode: "cors",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: $("feedbackName").value.trim(),
-          teamNumber: $("feedbackTeam").value.trim(),
-          email: $("feedbackEmail").value.trim(),
-          feedback: feedbackText,
-          website: $("feedbackWebsite").value
-        })
+        body: JSON.stringify({ name, teamNumber, email, feedback: feedbackText, website: honeypot })
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || data.ok === false) {
         throw new Error(data.error || `Server responded with status ${res.status}.`);
+      }
+      // Best-effort email to the owner (the sheet already has the row, so a
+      // failure here never blocks the user). Skipped for bots: the backend
+      // ignored the honeypot submission and so do we.
+      if (!honeypot) {
+        emailFeedbackToOwner({ name, teamNumber, email, feedback: feedbackText }).catch((emailError) => {
+          console.warn("Feedback email not sent:", emailError);
+        });
       }
       setFeedbackStatus(data.status || "Feedback received. Thank you!", false, false, true);
       $("feedbackForm").reset();

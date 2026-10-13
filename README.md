@@ -85,15 +85,15 @@ If the backend works, a new row should appear in the target Google Sheet.
 ### 7) How feedback is delivered
 Every feedback submission is delivered two ways:
 
-1. **Google Sheet** — appended to a **Feedback** tab in the Google Sheet behind `GOOGLE_SHEET_ID` (created automatically with headers), using the same service account as scouting sync.
-2. **Email to the site owner** — by default through [FormSubmit](https://formsubmit.co) (free, no signup, no SMTP password). **The first-ever submission only sends an activation email** to the owner — click the confirmation link in that email once and every later submission is delivered straight to their inbox.
+1. **Google Sheet** — the backend appends it to a **Feedback** tab in the Google Sheet behind `GOOGLE_SHEET_ID` (created automatically with headers), using the same service account as scouting sync.
+2. **Email to the site owner** — the browser sends it through [FormSubmit](https://formsubmit.co) (free, no signup). This happens client-side because FormSubmit and similar free relays block server-side calls from cloud hosts — but browser posts are their supported, intended usage. **The first-ever submission triggers an activation email** to the owner — click the confirmation link in it once and every later submission is delivered straight to their inbox.
 
-Optional overrides in `backend/.env` (and on your host, e.g. Render):
+Optional overrides in `backend/.env` (and on your host, e.g. Render) — if SMTP is configured, the backend ALSO emails directly:
 
 ```env
-# Deliver email to a different address (defaults to the project owner):
+# FormSubmit recipient (defaults to the project owner):
 FEEDBACK_TO_EMAIL=your_email_here
-# Use your own SMTP server instead of FormSubmit:
+# Optional direct SMTP from the backend:
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=465
 SMTP_USER=your_smtp_username_here

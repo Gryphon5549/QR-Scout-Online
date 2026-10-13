@@ -113,58 +113,12 @@ app.post('/api/sync-sheet', async (req, res) => {
   }
 });
 
-// The service account has no inbox, so when SMTP is not configured we deliver
-// owner notifications through FormSubmit (free, no signup). The FIRST submission
-// only sends the owner an activation email — clicking the link once enables
-// delivery of every later submission. The address is assembled from parts so
-// scrapers can't harvest it from this public repo; override via FEEDBACK_TO_EMAIL.
+// Optional SMTP delivery: when the SMTP_* variables are configured the backend
+// also emails feedback directly. Free web relays (FormSubmit/Web3Forms) block
+// server-side calls from cloud IPs, so by default the browser emails the
+// owner — see emailFeedbackToOwner in assets/js/app.js. This address is
+// assembled from parts so scrapers can't harvest it from this public repo.
 const DEFAULT_FEEDBACK_EMAIL = ['rileyhh2901', '@', 'gmail.com'].join('');
-
-async function sendFeedbackViaFormSubmit(toEmail, subject, fields) {
-  // FormSubmit rejects server-side requests without a Referer header
-  // ("open this page through a web server"), so send the site's own URL.
-  const response = await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(toEmail)}`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-      Referer: 'https://home-grown-code.github.io/QR-Scout-Online/',
-      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
-      'Accept-Language': 'en-US,en;q=0.9'
-    },
-    body: JSON.stringify({
-      _subject: subject,
-      _captcha: 'false',
-      _template: 'box',
-      _replyto: fields.email && fields.email !== '(not provided)' ? fields.email : undefined,
-      name: fields.name,
-      teamNumber: fields.teamNumber,
-      email: fields.email,
-      message: fields.feedback
-    })
-  });
-
-  let data = {};
-  try {
-    data = await response.json();
-  } catch (parseError) {
-    // Non-JSON response — fall through and judge by status code.
-  }
-
-  const rejected = data.success === 'false' || data.success === false;
-  if (!response.ok || rejected) {
-    const message = data.message || `FormSubmit request failed (HTTP ${response.status}).`;
-    if (/activ/i.test(message)) {
-      // One-time activation: FormSubmit emailed the owner an "Activate Form"
-      // link. Count as accepted — delivery starts once the link is clicked.
-      console.warn(`FormSubmit: waiting for one-time activation — click the "Activate Form" email sent to ${toEmail}.`);
-      return { pendingActivation: true };
-    }
-    throw new Error(message);
-  }
-  return data;
-}
-
 app.post('/api/feedback', async (req, res) => {
   try {
     const payload = req.body || {};
@@ -284,10 +238,8 @@ app.post('/api/feedback', async (req, res) => {
           subject: emailSubject,
           text
         });
-      } else {
-        await sendFeedbackViaFormSubmit(toEmail, emailSubject, emailFields);
+        emailed = true;
       }
-      emailed = true;
     } catch (mailError) {
       console.error('feedback email failed:', mailError);
       problems.push(`email: ${mailError && mailError.message ? mailError.message : String(mailError)}`);
