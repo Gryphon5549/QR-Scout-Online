@@ -3,8 +3,8 @@
   const STORAGE_KEY = "qrscoutSavedState";
   // Shared backend that writes to Google Sheets, and the service account email
   // that each user's sheet must be shared with (as an Editor). Set these once.
-  const BACKEND_URL = "https://YOUR-BACKEND.onrender.com/api/sync-sheet";
-  const SERVICE_EMAIL = "your-service-account@your-project.iam.gserviceaccount.com";
+  const BACKEND_URL = "https://qr-scout-online.onrender.com/api/sync-sheet";
+  const SERVICE_EMAIL = "frc-scout@frc-scout-511222.iam.gserviceaccount.com";
   let config = null;
   let lastPayload = "";
   let shouldAdvanceMatch = false;
@@ -369,7 +369,7 @@
     } else {
       try {
         const parsed = new URL(scriptUrl);
-        if (!/^(https?|http):/.test(parsed.href)) {
+        if (!/^https?:/.test(parsed.href)) {
           hints.push("Use a real HTTP or HTTPS backend URL.");
         }
       } catch (err) {
@@ -656,10 +656,13 @@
 
   function showScoutPage() {
     if (!config) {
-      if ((location.hash || "").toLowerCase() !== "#/home") {
-        history.replaceState(null, "", "#/home");
+      // No config saved yet: fall back to the built-in sample so the Scout
+      // tab is always usable instead of bouncing back to Home.
+      try {
+        applyConfig(sampleConfig);
+      } catch (err) {
+        setStatus(err.message, true);
       }
-      showHome();
       return;
     }
     $("startGuideSection").classList.add("hidden");
@@ -778,8 +781,29 @@
     downloadBlob("example-config.json", JSON.stringify(sampleConfig, null, 2), "application/json");
   });
 
-  $("formArea").addEventListener("input", saveCurrentState);
-  $("formArea").addEventListener("change", saveCurrentState);
+  // Debounce the high-frequency form listeners so we don't re-serialize the
+  // whole form to localStorage on every keystroke. Direct calls to
+  // saveCurrentState() elsewhere stay immediate.
+  let saveStateTimer = null;
+  function scheduleSaveState() {
+    if (saveStateTimer) clearTimeout(saveStateTimer);
+    saveStateTimer = setTimeout(() => {
+      saveStateTimer = null;
+      saveCurrentState();
+    }, 250);
+  }
+  function flushSaveState() {
+    if (saveStateTimer) {
+      clearTimeout(saveStateTimer);
+      saveStateTimer = null;
+      saveCurrentState();
+    }
+  }
+
+  $("formArea").addEventListener("input", scheduleSaveState);
+  $("formArea").addEventListener("change", scheduleSaveState);
+  // Persist any pending keystroke before the page goes away.
+  window.addEventListener("pagehide", flushSaveState);
 
   $("applyJsonBtn").addEventListener("click", () => {
     try {

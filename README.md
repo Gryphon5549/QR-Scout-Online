@@ -37,7 +37,7 @@ Copy `.env.example` to `.env` and fill in the values:
 ```env
 PORT=3001
 GOOGLE_SHEET_ID=your_sheet_id_here
-GOOGLE_SERVICE_ACCOUNT_EMAIL=your-service-account@your-project.iam.gserviceaccount.com
+GOOGLE_SERVICE_ACCOUNT_EMAIL=frc-scout@frc-scout-511222.iam.gserviceaccount.com
 GOOGLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
 SHEET_NAME=Scouting
 ```
@@ -63,8 +63,8 @@ Use the repo as follows:
 
 For example:
 
-- Frontend URL: https://your-user.github.io/QR-Scout-Online/
-- Backend URL: https://your-backend-app.onrender.com/api/sync-sheet
+- Frontend URL: https://home-grown-code.github.io/QR-Scout-Online/
+- Backend URL: https://qr-scout-online.onrender.com/api/sync-sheet
 
 ### 5) Use the website
 Open the site over HTTP, not as a file path.

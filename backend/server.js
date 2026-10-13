@@ -12,7 +12,14 @@ const PORT = process.env.PORT || 3001;
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json({ limit: '10mb' }));
 
+let sheetsClientPromise = null;
+
 async function getSheetsClient() {
+  // Build the auth client once and reuse it. GoogleAuth auto-refreshes its
+  // access token, so one client is safe across requests and avoids re-parsing
+  // the key + resolving a token on every sync. Config/auth errors throw before
+  // assignment below, so failures are never cached and the next request retries.
+  if (sheetsClientPromise) return sheetsClientPromise;
   const serviceAccountEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
   const privateKey = process.env.GOOGLE_PRIVATE_KEY;
   const sheetId = process.env.GOOGLE_SHEET_ID;
@@ -30,7 +37,8 @@ async function getSheetsClient() {
   });
 
   const authClient = await auth.getClient();
-  return google.sheets({ version: 'v4', auth: authClient });
+  sheetsClientPromise = google.sheets({ version: 'v4', auth: authClient });
+  return sheetsClientPromise;
 }
 
 app.get('/health', (req, res) => {
