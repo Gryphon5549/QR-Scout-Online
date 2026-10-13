@@ -37,10 +37,18 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Install Linux packaging prerequisites
+        if: runner.os == 'Linux'
+        # ubuntu-24.04 runners ship without FUSE, which the AppImage
+        # tooling (linuxdeploy/appimagetool) normally needs to mount.
+        run: sudo apt-get update && sudo apt-get install -y libfuse2t64
+
       - name: Build installers
         env:
           # No signing certificates in this repo — skip macOS signing lookups.
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+          # Without FUSE, AppImage tools must extract-and-run instead of mount.
+          APPIMAGE_EXTRACT_AND_RUN: '1'
         run: |
           case "${{ runner.os }}" in
             Windows) npx electron-builder --win nsis --x64 --arm64 ;;
