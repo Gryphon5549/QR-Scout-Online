@@ -60,21 +60,17 @@ jobs:
         if: runner.os == 'Linux'
         # electron-builder names Linux x64 artifacts x86_64 (Debian style) and
         # amd64 (deb). The site's download links use stable x64 names.
+        # Bash-only rename (no sed/pipelines) so the step cannot fail on the
+        # runner's tooling; the glob is guarded so a missing file is a no-op.
         run: |
-          cd dist-app || { echo "FATAL: dist-app not found"; exit 1; }
-          echo "--- dist-app contents before normalization ---"
-          ls -1
-          for f in QRScout-linux-x86_64.* QRScout-linux-amd64.*; do
-            if [ ! -e "$f" ]; then
-              echo "no match: $f (skip)"
-              continue
-            fi
-            base=$(basename "$f" | sed -e 's/x86_64/x64/' -e 's/amd64/x64/')
+          for f in dist-app/QRScout-linux-x86_64.* dist-app/QRScout-linux-amd64.*; do
+            [ -e "$f" ] || continue
+            base="${f/x86_64/x64}"
+            base="${base/amd64/x64}"
             mv -f "$f" "$base"
             echo "renamed: $f -> $base"
           done
-          echo "--- dist-app contents after normalization ---"
-          ls -l
+          ls -l dist-app
 
       - name: Publish build log to ci-debug branch (on failure)
         if: failure()
