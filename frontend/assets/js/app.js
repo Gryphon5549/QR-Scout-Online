@@ -5,9 +5,9 @@
   let lastPayload = "";
   let shouldAdvanceMatch = false;
 
-  const baseFormConfig = {
-    title: "Base Scouting Form",
-    page_title: "Base Scouting Form",
+  const sampleConfig = {
+    title: "Millerbots Scouting",
+    page_title: "Millerbots Scouting",
     teamNumber: 2549,
     delimiter: "\\t",
     sections: [
@@ -16,15 +16,48 @@
         fields: [
           { title: "Scouter Initials", description: "Enter the initials of the scouter.", type: "text", required: true, code: "scouter", defaultValue: "" },
           { title: "Match Number", description: "Select the match number.", type: "number", required: true, code: "matchNumber", defaultValue: 1 },
-          { title: "Robot Number", description: "Enter the robot number you're scouting.", type: "text", required: true, code: "robot", defaultValue: "" },
-          { title: "Starting Position", type: "select", required: true, code: "startPos", defaultValue: "", choices: { B1: "Blue 1", B2: "Blue 2", B3: "Blue 3", R1: "Red 1", R2: "Red 2", R3: "Red 3" } },
+          { title: "Robot number", description: "Enter the robot number you're scouting.", type: "text", required: true, code: "robot", defaultValue: "" },
+          { title: "Starting Position", type: "select", required: true, code: "startPos", defaultValue: "", choices: { B1:"Blue 1", B2:"Blue 2", B3:"Blue 3", R1:"Red 1", R2:"Red 2", R3:"Red 3" } },
           { title: "No Show", type: "boolean", required: false, code: "noShow", defaultValue: false }
         ]
       },
       {
-        name: "Match Notes",
+        name: "Autonomous",
         fields: [
-          { title: "Comments", description: "Add any notes about the robot or match.", type: "text", code: "comments", defaultValue: "" }
+          { title: "Had auto?", type: "boolean", code: "Auto", defaultValue: false },
+          { title: "Fuel Scored in Auto?", type: "counter", code: "autoFuelScored", defaultValue: 0, min: 0, step: 3 },
+          { title: "Fuel Missed in Auto?", type: "counter", code: "autoFuelMissed", defaultValue: 0, min: 0, step: 1 },
+          { title: "Climbed in auto?", type: "boolean", code: "auClimb", defaultValue: false },
+          { title: "Auto effectiveness", type: "range", code: "autoEff", defaultValue: 4, min: 1, max: 7, step: 1 }
+        ]
+      },
+      {
+        name: "Teleop",
+        fields: [
+          { title: "Alliance won auto?", type: "boolean", code: "allianceWonAuto", defaultValue: false },
+          { title: "Fuel Scored in Teleop?", type: "counter", code: "telFuelScored", defaultValue: 0, min: 0, step: 3 },
+          { title: "Fuel Missed in Teleop?", type: "counter", code: "telFuelMissed", defaultValue: 0, min: 0, step: 1 },
+          { title: "Defended during match?", type: "boolean", code: "robotDefended", defaultValue: false },
+          { title: "Passed during match?", type: "boolean", code: "pass", defaultValue: false },
+          { title: "Bump?", type: "boolean", code: "bump", defaultValue: false },
+          { title: "Trench?", type: "boolean", code: "trench", defaultValue: false },
+          { title: "Stuck on fuel during match?", type: "boolean", code: "fuelStuck", defaultValue: false },
+          { title: "Issues", type: "select", required: true, code: "Failures", defaultValue: "No", choices: { No:"Zero issues", Mech:"Mechanical issue", Die:"Died/disconnected", Tip:"Tipped/fell over", Stu:"Stuck for >5-10 seconds", F:"Multiple issues (elaborate in comments)" } }
+        ]
+      },
+      {
+        name: "Endgame/Postmatch",
+        fields: [
+          { title: "Climbed", type: "select", required: true, code: "climbedTel", defaultValue: "No", choices: { No:"No Climb", L1:"Level 1", L2:"Level 2", L3:"Level 3", F:"Failed Climb" } },
+          { title: "Scored How?", type: "select", required: true, code: "scoredHow", defaultValue: "blank", choices: { blank:"(blank)", driving:"While driving", stationary:"While stationary", both:"Both", none:"No scoring" } },
+          { title: "Scoring Accuracy", type: "range", code: "scoringEff", defaultValue: 4, min: 1, max: 7, step: 1 },
+          { title: "Scoring Speed", type: "range", code: "scoringSped", defaultValue: 4, min: 1, max: 7, step: 1 },
+          { title: "Intake Effectiveness", type: "range", code: "intakeEff", defaultValue: 4, min: 1, max: 7, step: 1 },
+          { title: "Driving skill", type: "range", code: "drivSkill", defaultValue: 4, min: 1, max: 7, step: 1 },
+          { title: "Passing Skill", type: "range", code: "passSkill", defaultValue: 1, min: 1, max: 7, step: 1 },
+          { title: "Defense Skill", type: "range", code: "defSkill", defaultValue: 1, min: 1, max: 7, step: 1 },
+          { title: "Yellow/Red Card", type: "select", required: true, code: "yc", defaultValue: "No Card", choices: { "No Card":"No Card", Yellow:"Yellow Card", Red:"Red Card" } },
+          { title: "Comments", type: "text", code: "co", defaultValue: "" }
         ]
       }
     ]
@@ -420,7 +453,7 @@
     }
 
     if (isFileProtocol()) {
-      setModalStatus("Open the site through GitHub Pages or localhost first, not file://. Example: http://localhost:8000", true);
+      setModalStatus("Open this website over https:// or http:// first, not from a local file:// path.", true);
       return;
     }
 
@@ -518,6 +551,18 @@
     } catch (err) {
       setModalStatus(err.message || "Could not generate QR code.", true);
     }
+  }
+
+  function downloadBlob(filename, content, mime) {
+    const blob = new Blob([content], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
   }
 
   function downloadQr() {
@@ -648,7 +693,7 @@
 
   $("loadExample").addEventListener("click", () => {
     try {
-      applyConfig(baseFormConfig);
+      applyConfig(sampleConfig);
     } catch (err) {
       setStatus(err.message, true);
     }
@@ -693,6 +738,19 @@
   $("modalBackBtn").addEventListener("click", backToChoices);
   $("navAppBtn").addEventListener("click", showScoutApp);
   $("navGuideBtn").addEventListener("click", showStartGuide);
+  $("downloadExampleConfigBtn").addEventListener("click", () => {
+    downloadBlob("example-config.json", JSON.stringify(sampleConfig, null, 2), "application/json");
+  });
+  $("downloadEnvBtn").addEventListener("click", () => {
+    const env = [
+      "PORT=3001",
+      "GOOGLE_SHEET_ID=your_google_sheet_id_here",
+      "GOOGLE_SERVICE_ACCOUNT_EMAIL=your-service-account@your-project.iam.gserviceaccount.com",
+      "GOOGLE_PRIVATE_KEY=\"-----BEGIN PRIVATE KEY-----\\nYOUR_PRIVATE_KEY_HERE\\n-----END PRIVATE KEY-----\\n\"",
+      "SHEET_NAME=Scouting"
+    ].join("\n") + "\n";
+    downloadBlob(".env.example", env, "text/plain;charset=utf-8");
+  });
 
   $("formArea").addEventListener("input", saveCurrentState);
   $("formArea").addEventListener("change", saveCurrentState);
