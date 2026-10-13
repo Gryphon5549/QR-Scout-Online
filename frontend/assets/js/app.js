@@ -279,11 +279,30 @@
     el.className = "status" + (isError ? " error" : " ok");
   }
 
+  function showChoices() {
+    const grid = $("choiceGrid");
+    if (grid) grid.classList.remove("hidden");
+    const backBtn = $("modalBackBtn");
+    if (backBtn) backBtn.classList.add("hidden");
+  }
+
+  function hideChoices() {
+    const grid = $("choiceGrid");
+    if (grid) grid.classList.add("hidden");
+    const backBtn = $("modalBackBtn");
+    if (backBtn) backBtn.classList.remove("hidden");
+  }
+
+  function backToChoices() {
+    clearModalContent();
+    shouldAdvanceMatch = false;
+    showChoices();
+  }
+
   function showModal() {
     shouldAdvanceMatch = false;
     clearModalContent();
-    const syncBtn = $("syncChoiceBtn");
-    if (syncBtn) syncBtn.classList.remove("hidden");
+    showChoices();
     $("commitModal").classList.remove("hidden");
   }
 
@@ -427,6 +446,7 @@
   }
 
   function syncToGoogleForm() {
+    hideChoices();
     if (!config || !config.googleFormUrl) {
       setModalStatus("Add the script URL in the sync panel first.", true);
       return;
@@ -526,8 +546,7 @@
       });
       $("modalDownloadBtn").classList.remove("hidden");
       shouldAdvanceMatch = true;
-      const syncBtn = $("syncChoiceBtn");
-      if (syncBtn) syncBtn.classList.add("hidden");
+      hideChoices();
       setModalStatus("QR code generated. Scan it to retrieve the scouting data.", false, true);
     } catch (err) {
       setModalStatus(err.message || "Could not generate QR code.", true);
@@ -674,6 +693,7 @@
     if (!collapsed) panel.scrollIntoView({ behavior: "smooth", block: "start" });
   });
   $("modalDownloadBtn").addEventListener("click", downloadQr);
+  $("modalBackBtn").addEventListener("click", backToChoices);
 
   $("formArea").addEventListener("input", saveCurrentState);
   $("formArea").addEventListener("change", saveCurrentState);
