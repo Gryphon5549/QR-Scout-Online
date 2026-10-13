@@ -60,17 +60,23 @@ jobs:
         if: runner.os == 'Linux'
         # electron-builder names Linux x64 artifacts x86_64 (Debian style) and
         # amd64 (deb). The site's download links use stable x64 names.
-        # Bash-only rename (no sed/pipelines) so the step cannot fail on the
-        # runner's tooling; the glob is guarded so a missing file is a no-op.
+        # Node-based rename from GITHUB_WORKSPACE (absolute paths, no shell
+        # globbing/sed) so the step cannot fail on the runner's tooling.
         run: |
-          for f in dist-app/QRScout-linux-x86_64.* dist-app/QRScout-linux-amd64.*; do
-            [ -e "$f" ] || continue
-            base="${f/x86_64/x64}"
-            base="${base/amd64/x64}"
-            mv -f "$f" "$base"
-            echo "renamed: $f -> $base"
-          done
-          ls -l dist-app
+          node -e '
+            const fs = require("fs");
+            const path = require("path");
+            const root = process.env.GITHUB_WORKSPACE;
+            const dir = path.join(root, "dist-app");
+            for (const entry of fs.readdirSync(dir)) {
+              const m = entry.match(/^QRScout-linux-(x86_64|amd64)\.(AppImage|deb)$/);
+              if (m) {
+                const target = `QRScout-linux-x64${m[2]}`;
+                fs.renameSync(path.join(dir, entry), path.join(dir, target));
+                console.log(`renamed ${entry} -> ${target}`);
+              }
+            }
+          '
 
       - name: Publish build log to ci-debug branch (on failure)
         if: failure()
