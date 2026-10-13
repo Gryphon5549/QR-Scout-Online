@@ -42,8 +42,10 @@ async function getSheetsClient() {
   return sheetsClientPromise;
 }
 
+const STARTED_AT = new Date().toISOString();
+
 app.get('/health', (req, res) => {
-  res.json({ ok: true, status: 'backend running' });
+  res.json({ ok: true, status: 'backend running', startedAt: STARTED_AT });
 });
 
 app.post('/api/sync-sheet', async (req, res) => {
@@ -291,7 +293,11 @@ app.post('/api/feedback', async (req, res) => {
 
     if (savedToSheet || emailed) {
       const how = emailed ? 'emailed to the site owner' : 'saved to the Feedback tab in your Google Sheet';
-      return res.json({ ok: true, status: `Feedback received (${how}). Thank you!` });
+      const responseBody = { ok: true, status: `Feedback received (${how}). Thank you!` };
+      // Diagnostic only (the form UI ignores extra fields): tells the caller
+      // why a delivery path failed, since Render logs aren't always at hand.
+      if (problems.length) responseBody.note = problems.join('; ');
+      return res.json(responseBody);
     }
 
     return res.status(500).json({
