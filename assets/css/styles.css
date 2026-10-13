@@ -399,6 +399,47 @@ input[type="range"] {
   overflow: hidden;
 }
 
+.browser-card #pwaInstallBtn {
+  margin-top: 8px;
+  align-self: flex-start;
+}
+
+/* ---------- App tab downloads ---------- */
+.download-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.download-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text);
+  text-decoration: none;
+  transition: border-color 0.15s ease, transform 0.15s ease, background 0.15s ease;
+}
+
+a.download-card:hover {
+  border-color: rgba(74, 141, 255, 0.6);
+  background: rgba(74, 141, 255, 0.08);
+  transform: translateY(-2px);
+}
+
+.download-card .download-name {
+  font-weight: 700;
+}
+
+.download-card small {
+  color: var(--muted);
+  line-height: 1.4;
+}
+
 .hidden { display: none !important; }
 
 @media (max-width: 900px) {

@@ -1,0 +1,33 @@
+appId: com.homegrowncode.qrscout
+productName: QR Scout
+copyright: Copyright © 2026 Team 2549 Millerbots
+# Stable file names (no version) so the site's download links can point at
+# releases/latest/download/<name> forever.
+artifactName: 'QRScout-${os}-${arch}.${ext}'
+directories:
+  output: ../dist-app
+files:
+  - main.js
+  - package.json
+win:
+  target:
+    - nsis
+nsis:
+  oneClick: true
+  perMachine: false
+  allowToChangeInstallationDirectory: false
+mac:
+  target:
+    - dmg
+    - zip
+  category: public.app-category.utilities
+  # Unsigned on purpose — no signing certificates in this repo.
+  identity: null
+  hardenedRuntime: false
+linux:
+  target:
+    - AppImage
+    - deb
+  category: Utility
+  maintainer: Team 2549 Millerbots <noreply@example.com>
+  synopsis: QR Scout Online desktop shell

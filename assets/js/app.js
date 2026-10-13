@@ -633,6 +633,8 @@
     $("navGuideBtn").classList.toggle("active", which === "guide");
     const feedbackBtn = $("navFeedbackBtn");
     if (feedbackBtn) feedbackBtn.classList.toggle("active", which === "feedback");
+    const downloadBtn = $("navDownloadBtn");
+    if (downloadBtn) downloadBtn.classList.toggle("active", which === "app");
   }
 
   function route() {
@@ -643,6 +645,8 @@
       showScoutPage();
     } else if (hash === "#/feedback") {
       showFeedback();
+    } else if (hash === "#/app" || hash === "#/download") {
+      showAppSection();
     } else {
       showHome();
     }
@@ -653,6 +657,7 @@
     $("scoutingPage").classList.add("hidden");
     $("howToUseSection").classList.add("hidden");
     $("feedbackSection").classList.add("hidden");
+    $("appSection").classList.add("hidden");
     $("startGuideSection").classList.remove("hidden");
     setActiveTab("guide");
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -663,6 +668,7 @@
     $("scoutingPage").classList.add("hidden");
     $("howToUseSection").classList.add("hidden");
     $("startGuideSection").classList.add("hidden");
+    $("appSection").classList.add("hidden");
     $("feedbackSection").classList.remove("hidden");
     setActiveTab("feedback");
     if ((location.hash || "").toLowerCase() !== "#/feedback") {
@@ -674,10 +680,25 @@
   function showHome() {
     $("startGuideSection").classList.add("hidden");
     $("feedbackSection").classList.add("hidden");
+    $("appSection").classList.add("hidden");
     $("welcomeSection").classList.remove("hidden");
     $("howToUseSection").classList.remove("hidden");
     $("scoutingPage").classList.add("hidden");
     setActiveTab("home");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function showAppSection() {
+    $("welcomeSection").classList.add("hidden");
+    $("scoutingPage").classList.add("hidden");
+    $("howToUseSection").classList.add("hidden");
+    $("startGuideSection").classList.add("hidden");
+    $("feedbackSection").classList.add("hidden");
+    $("appSection").classList.remove("hidden");
+    setActiveTab("app");
+    if ((location.hash || "").toLowerCase() !== "#/app") {
+      history.replaceState(null, "", "#/app");
+    }
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -694,6 +715,7 @@
     }
     $("startGuideSection").classList.add("hidden");
     $("feedbackSection").classList.add("hidden");
+    $("appSection").classList.add("hidden");
     $("welcomeSection").classList.add("hidden");
     $("howToUseSection").classList.remove("hidden");
     $("scoutingPage").classList.remove("hidden");
@@ -715,6 +737,7 @@
     config = obj;
     $("welcomeSection").classList.add("hidden");
     $("feedbackSection").classList.add("hidden");
+    $("appSection").classList.add("hidden");
     $("scoutingPage").classList.remove("hidden");
     renderForm();
     $("jsonEditor").value = JSON.stringify(config, null, 2);
@@ -806,6 +829,32 @@
   $("navScoutBtn").addEventListener("click", showScoutPage);
   $("navGuideBtn").addEventListener("click", showStartGuide);
   $("navFeedbackBtn").addEventListener("click", showFeedback);
+  const navDownloadBtn = $("navDownloadBtn");
+  if (navDownloadBtn) navDownloadBtn.addEventListener("click", showAppSection);
+
+  // PWA "Install app" support (Chrome/Edge/Android): reveal the install
+  // button on the App tab when the browser offers the install prompt.
+  let deferredInstallPrompt = null;
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    const installBtn = $("pwaInstallBtn");
+    if (installBtn) installBtn.hidden = false;
+  });
+  const pwaInstallBtn = $("pwaInstallBtn");
+  if (pwaInstallBtn) {
+    pwaInstallBtn.addEventListener("click", async () => {
+      if (!deferredInstallPrompt) return;
+      deferredInstallPrompt.prompt();
+      await deferredInstallPrompt.userChoice;
+      deferredInstallPrompt = null;
+      pwaInstallBtn.hidden = true;
+    });
+  }
+  if (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) {
+    const pwaHint = $("pwaInstallHint");
+    if (pwaHint) pwaHint.textContent = "You're running the installed app — nice!";
+  }
   window.addEventListener("hashchange", route);
 
   // Feedback form: name/team/email optional, feedback required. The backend

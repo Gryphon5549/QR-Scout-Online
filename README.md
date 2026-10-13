@@ -104,6 +104,16 @@ FEEDBACK_SHEET_NAME=Feedback
 
 For Gmail SMTP, create an **App Password** (Google Account → Security → 2-Step Verification → App passwords) and use it as `SMTP_PASS` — the normal login password will not work.
 
+### 8) The App tab & desktop builds
+The **App** tab (`#/app`) offers downloadable desktop versions of QR Scout Online plus installable web-app (PWA) support for Chrome/Edge.
+
+- **Desktop apps** live in `app/` — a tiny [Electron](https://electronjs.org) shell that loads the hosted site, so every install always runs the latest version.
+- **CI builds them** (`.github/workflows/build-apps.yml`) for Windows x64/ARM, macOS Intel/Apple Silicon, and Linux x64/ARM (AppImage + deb). Push a tag like `v1.0.0` (or run the workflow manually) — installers are attached to the GitHub Release with **stable file names** (`QRScout-win-x64.exe`, `QRScout-mac-arm64.dmg`, …) so the App tab's `releases/latest/download/...` links always point at the newest build.
+- **Chrome install**: the site ships a `manifest.webmanifest`, so Chrome shows “Install QR Scout” (menu ⋮ → Install, or the button on the App tab).
+- Local dev: `cd app && npm install && npm start`.
+
+The installers are not code-signed (no certificates in this repo): on macOS right-click → **Open** the first time; on Windows choose **More info → Run anyway** if SmartScreen warns.
+
 ## Important
 
 Do not open the site as a local HTML file. The browser fetch will fail from a file:// page.

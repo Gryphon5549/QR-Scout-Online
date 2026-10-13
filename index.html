@@ -29,6 +29,8 @@
   <meta name="twitter:image" content="https://home-grown-code.github.io/QR-Scout-Online/assets/images/millerbots-logo.svg">
 
   <link rel="stylesheet" href="assets/css/styles.css">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/svg+xml" href="assets/images/millerbots-logo.svg">
 
   <!-- Structured data (schema.org) so Google can understand and feature the site -->
   <script type="application/ld+json">
@@ -72,6 +74,7 @@
         <a id="navScoutBtn" href="#/scout" class="tab-btn">Scout</a>
         <a id="navGuideBtn" href="#/start-guide" class="tab-btn">Start guide</a>
         <a id="navFeedbackBtn" href="#/feedback" class="tab-btn">Feedback</a>
+        <a id="navDownloadBtn" href="#/app" class="tab-btn">App</a>
       </nav>
     </div>
   </header>
@@ -253,6 +256,46 @@
       </div>
       <div id="feedbackStatus" class="status">Only the feedback box is required.</div>
     </form>
+  </section>
+
+  <section id="appSection" class="panel app-panel hidden" aria-label="Download the app">
+    <div class="eyebrow">App</div>
+    <h2>Download QR Scout — desktop apps &amp; installable web app</h2>
+    <p>Pick your platform. The desktop apps open QR Scout Online in its own window and always load the latest version of the site.</p>
+
+    <div class="download-grid">
+      <a class="download-card" href="https://github.com/Home-Grown-Code/QR-Scout-Online/releases/latest/download/QRScout-win-x64.exe">
+        <span class="download-name">Windows</span>
+        <small>64-bit Intel/AMD — installer (.exe)</small>
+      </a>
+      <a class="download-card" href="https://github.com/Home-Grown-Code/QR-Scout-Online/releases/latest/download/QRScout-win-arm64.exe">
+        <span class="download-name">Windows on ARM</span>
+        <small>Snapdragon / ARM laptops — installer (.exe)</small>
+      </a>
+      <a class="download-card" href="https://github.com/Home-Grown-Code/QR-Scout-Online/releases/latest/download/QRScout-mac-arm64.dmg">
+        <span class="download-name">Mac (Apple Silicon)</span>
+        <small>M1 / M2 / M3 / M4 — disk image (.dmg)</small>
+      </a>
+      <a class="download-card" href="https://github.com/Home-Grown-Code/QR-Scout-Online/releases/latest/download/QRScout-mac-x64.dmg">
+        <span class="download-name">Mac (Intel)</span>
+        <small>2020 and earlier — disk image (.dmg)</small>
+      </a>
+      <a class="download-card" href="https://github.com/Home-Grown-Code/QR-Scout-Online/releases/latest/download/QRScout-linux-x64.AppImage">
+        <span class="download-name">Linux (64-bit)</span>
+        <small>AppImage — chmod +x, then run</small>
+      </a>
+      <a class="download-card" href="https://github.com/Home-Grown-Code/QR-Scout-Online/releases/latest/download/QRScout-linux-arm64.AppImage">
+        <span class="download-name">Linux ARM</span>
+        <small>Raspberry Pi / ARM boards — AppImage</small>
+      </a>
+      <div class="download-card browser-card">
+        <span class="download-name">Chrome &amp; any browser</span>
+        <small id="pwaInstallHint">No download needed — open this site in Chrome, then menu ⋮ → “Install QR Scout”.</small>
+        <button id="pwaInstallBtn" type="button" class="primary" hidden>Install QR Scout</button>
+      </div>
+    </div>
+
+    <p class="hint">These installers are not code-signed. On macOS, right-click the app and choose <strong>Open</strong> the first time. On Windows, choose <em>More info → Run anyway</em> if SmartScreen warns you.</p>
   </section>
   </main>
 

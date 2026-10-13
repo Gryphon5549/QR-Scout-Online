@@ -1,0 +1,79 @@
+name: Build desktop apps
+
+# Builds the Electron desktop shells for every platform and attaches the
+# installers to a GitHub Release when a v* tag is pushed. The site's App tab
+# links to releases/latest/download/<stable-name>, so file names must stay
+# stable (see artifactName in app/electron-builder.yml).
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: app
+        shell: bash
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build installers
+        env:
+          # No signing certificates in this repo — skip macOS signing lookups.
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+        run: |
+          case "${{ runner.os }}" in
+            Windows) npx electron-builder --win nsis --x64 --arm64 ;;
+            macOS)   npx electron-builder --mac dmg zip --x64 --arm64 ;;
+            Linux)   npx electron-builder --linux AppImage deb --x64 --arm64 ;;
+          esac
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: apps-${{ runner.os }}
+          path: |
+            dist-app/*.exe
+            dist-app/*.dmg
+            dist-app/*.zip
+            dist-app/*.AppImage
+            dist-app/*.deb
+          if-no-files-found: error
+
+  release:
+    name: Publish GitHub release
+    if: github.ref_type == 'tag'
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Create release with installers
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/*
+          generate_release_notes: true
