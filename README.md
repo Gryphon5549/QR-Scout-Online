@@ -57,7 +57,7 @@ npm start
 ### 4) Deploy the frontend and backend
 Use the repo as follows:
 
-- GitHub Pages hosts the frontend in the repo root or the `frontend/` folder.
+- GitHub Pages hosts the frontend from the repo root (`index.html` and the `assets/` folder).
 - A hosted backend such as Render, Railway, or a small VPS runs the Node API.
 - The frontend saves the backend API URL in the browser and sends full JSON payloads there.
 

@@ -1,10 +1,248 @@
 ﻿<!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta http-equiv="refresh" content="0; url=frontend/" />
-  <title>Redirecting...</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>2549 Scouting</title>
+  <link rel="stylesheet" href="assets/css/styles.css">
 </head>
 <body>
-  <p>Redirecting to the frontend...</p>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div id="brandHomeBtn" class="brand-block" role="button" tabindex="0" aria-label="Return to the welcome screen">
+        <h1>2549 Scouting</h1>
+      </div>
+      <nav class="tabs" aria-label="Pages">
+        <a id="navAppBtn" href="#/home" class="tab-btn active">Home</a>
+        <a id="navScoutBtn" href="#/scout" class="tab-btn">Scout</a>
+        <a id="navGuideBtn" href="#/start-guide" class="tab-btn">Start guide</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="single-page">
+    <section id="welcomeSection" class="panel welcome-panel">
+      <div class="eyebrow">Team 2549</div>
+      <h2>Welcome to 2549 scouting</h2>
+      <p>Import your config below to start collecting match data.</p>
+
+      <div class="upload-box">
+        <label for="configFile">Import config</label>
+        <input id="configFile" type="file" accept=".json,application/json">
+        <button id="loadExample" type="button" class="secondary">Load sample</button>
+      </div>
+
+      <div id="configStatus" class="status">No configuration loaded yet.</div>
+    </section>
+
+    <section id="scoutingPage" class="hidden" aria-label="Scouting form">
+      <div class="panel form-panel">
+        <div id="formArea"></div>
+
+        <div class="actions">
+          <button id="commitBtn" type="button" class="primary">Commit</button>
+          <button id="toggleGoogleFormBtn" type="button">Show sync</button>
+          <button id="resetBtn" type="button">Reset fields</button>
+          <button id="toggleConfigManagerBtn" type="button">Edit JSON</button>
+        </div>
+      </div>
+
+      <section class="panel config-manager collapsed" id="configManager">
+        <h3>Configuration Manager</h3>
+        <p>Edit the current JSON, load a different file, or download a copy.</p>
+        <label for="jsonEditor">Current JSON configuration</label>
+        <textarea id="jsonEditor" spellcheck="false" placeholder="Load a JSON configuration to edit it here..."></textarea>
+
+        <div class="manager-actions">
+          <button id="applyJsonBtn" type="button" class="primary">Apply JSON edits</button>
+          <button id="uploadNewJsonBtn" type="button">Upload new JSON</button>
+          <button id="downloadJsonBtn" type="button">Download current JSON</button>
+          <button id="clearJsonBtn" type="button">Clear JSON</button>
+          <input id="managerJsonFile" type="file" accept=".json,application/json" hidden>
+        </div>
+
+        <div id="managerStatus" class="status" style="margin-top:12px;">Load a configuration to enable editing and downloading.</div>
+      </section>
+
+      <section class="panel sync-panel collapsed" id="googleFormSyncPanel">
+        <h3>Sync settings</h3>
+        <p>Optional. If you use the live Google Sheets sync, paste the backend URL here.</p>
+
+        <div class="sync-grid">
+          <div class="field">
+            <label for="googleFormUrl">Backend URL</label>
+            <input id="googleFormUrl" type="url" placeholder="https://your-backend-url.com/api/sync-sheet">
+          </div>
+          <div class="field">
+            <label for="sheetTabName">Tab name (optional)</label>
+            <input id="sheetTabName" type="text" placeholder="Scouting or leave blank for Sheet1">
+          </div>
+        </div>
+
+        <div class="sync-actions">
+          <button id="applyGoogleFormBtn" type="button" class="primary">Save sync</button>
+          <button id="clearGoogleFormBtn" type="button">Clear sync</button>
+        </div>
+
+        <div id="googleFormStatus" class="status" style="margin-top:12px;">No sync configured.</div>
+      </section>
+    </section>
+
+    <section id="howToUseSection" class="panel simple-help">
+      <h3>How to use</h3>
+      <ol>
+        <li>Import your scouting config.</li>
+        <li>Fill in the match details.</li>
+        <li>Tap Commit to save, download, or sync.</li>
+        <li>Use the QR code or saved data to keep a backup.</li>
+      </ol>
+    </section>
+  <section id="startGuideSection" class="panel start-guide hidden" aria-label="Start guide">
+    <div class="eyebrow">Use this website</div>
+    <h2>Start guide</h2>
+    <p>Want to send QR Scout match data into <strong>your own Google Sheet</strong> but you can't (or don't want to) host the website on GitHub Pages? Good news - you don't have to. You keep using <strong>this website</strong> as-is. You only need to (1) create a Google Cloud <strong>service account</strong> that is allowed to write into <strong>your</strong> sheet, (2) deploy the small backend on <strong>Render</strong>, and (3) paste your backend URL into this app. After that, every entry you commit lands in <strong>your own</strong> spreadsheet.</p>
+
+    <h3 class="guide-heading">Part 1 - Create the Google service account</h3>
+    <div class="guide-steps">
+      <div class="step-card">
+        <div class="step-number">1</div>
+        <h3>Open Google Cloud Console</h3>
+        <p>Go to <code>console.cloud.google.com</code> and create a new project, or select an existing one.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-number">2</div>
+        <h3>Enable the Google Sheets API</h3>
+        <p>Open <strong>APIs &amp; Services &rarr; Library</strong>, search for <strong>Google Sheets API</strong>, and click <strong>Enable</strong>.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-number">3</div>
+        <h3>Create the service account</h3>
+        <p>Open <strong>APIs &amp; Services &rarr; Credentials &rarr; Create Credentials &rarr; Service account</strong>. Give it a name and finish creating it. This is your service email, which looks like <code>your-name@your-project.iam.gserviceaccount.com</code>.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-number">4</div>
+        <h3>Create a JSON key</h3>
+        <p>Click the new service account, open the <strong>Keys</strong> tab, then <strong>Add Key &rarr; Create new key &rarr; JSON &rarr; Create</strong>. A <code>.json</code> file downloads. Keep it safe - it contains your private key.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-number">5</div>
+        <h3>Note the two values you need</h3>
+        <p>Open the JSON file and copy these two fields:</p>
+        <ul>
+          <li><code>client_email</code> - the service email.</li>
+          <li><code>private_key</code> - the long key starting with <code>-----BEGIN PRIVATE KEY-----</code>.</li>
+        </ul>
+      </div>
+      <div class="step-card">
+        <div class="step-number">6</div>
+        <h3>Create your own sheet and share it</h3>
+        <p>Make a brand-new Google Sheet to hold <strong>your</strong> scouting data and copy its ID from the URL (the part between <code>/d/</code> and <code>/edit</code>). Then click <strong>Share</strong>, paste the <code>client_email</code>, give it <strong>Editor</strong> access, and send. This is what lets the website write into <strong>your own</strong> sheet - without it the backend cannot add rows.</p>
+      </div>
+    </div>
+
+    <h3 class="guide-heading">Part 2 - Deploy the backend to Render</h3>
+    <div class="guide-steps">
+      <div class="step-card">
+        <div class="step-number">7</div>
+        <h3>Fork this repo (backend only)</h3>
+        <p>Fork this repository into your own GitHub account so Render can build it. You only deploy the <code>backend/</code> folder - the website itself stays hosted here, so you never set up GitHub Pages.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-number">8</div>
+        <h3>Create a Web Service on Render</h3>
+        <p>Sign in to your <code>render.com</code> account, choose <strong>New &rarr; Web Service</strong>, and connect your forked repo. Set the <strong>Root Directory</strong> to <code>backend</code>, the <strong>Build Command</strong> to <code>npm install</code>, and the <strong>Start Command</strong> to <code>npm start</code>.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-number">9</div>
+        <h3>Add the environment variables</h3>
+        <p>In the Render <strong>Environment</strong> tab, add these variables using the values from your JSON key:</p>
+        <pre><code>GOOGLE_SHEET_ID=your_sheet_id_here
+GOOGLE_SERVICE_ACCOUNT_EMAIL=your-name@your-project.iam.gserviceaccount.com
+GOOGLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...your key...\n-----END PRIVATE KEY-----\n"
+SHEET_NAME=Scouting</code></pre>
+        <p class="guide-download"><button id="downloadEnvBtn" type="button" class="secondary">Download Render env template</button></p>
+        <div class="callout">
+          <h3>Private key formatting</h3>
+          <p>Paste the <code>private_key</code> exactly as it appears in the JSON file, keeping the <code>\n</code> sequences on a single line and wrapping the whole value in double quotes as shown. The server converts the <code>\n</code> into real line breaks for you.</p>
+        </div>
+      </div>
+      <div class="step-card">
+        <div class="step-number">10</div>
+        <h3>Deploy and copy the URL</h3>
+        <p>Click <strong>Create Web Service</strong> and wait for the deploy. Open <code>https://your-app.onrender.com/health</code> - you should see <code>{"ok":true,...}</code>. Your sync endpoint is:</p>
+        <pre><code>https://your-app.onrender.com/api/sync-sheet</code></pre>
+      </div>
+    </div>
+
+    <h3 class="guide-heading">Part 3 - Use this website to send your data</h3>
+    <div class="guide-steps">
+      <div class="step-card">
+        <div class="step-number">11</div>
+        <h3>Open this website</h3>
+        <p>You're already on it - just make sure this site is open over <code>https://</code> (or <code>http://</code>), not as a local <code>file://</code> path. No GitHub Pages or local hosting needed.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-number">12</div>
+        <h3>Load a config</h3>
+        <p>On the welcome screen, click <strong>Import config</strong> to upload your own JSON, or <strong>Load sample</strong> to start from the example config.</p>
+        <p class="guide-download"><button id="downloadExampleConfigBtn" type="button" class="secondary">Download example config (.json)</button></p>
+      </div>
+      <div class="step-card">
+        <div class="step-number">13</div>
+        <h3>Save the sync URL</h3>
+        <p>Click <strong>Show sync</strong>, paste your Render endpoint into <strong>Backend URL</strong>, optionally set a <strong>Tab name</strong>, then click <strong>Save sync</strong>.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-number">14</div>
+        <h3>Commit and sync</h3>
+        <p>Fill out the form, click <strong>Commit</strong>, then choose <strong>Sync to Sheet</strong>. A new row appears in <strong>your own</strong> Google Sheet. You can also generate a QR code for an offline backup.</p>
+      </div>
+    </div>
+
+    <div class="callout">
+      <h3>Troubleshooting</h3>
+      <ul>
+        <li><strong>Missing ... in environment variables</strong> - a Render variable is empty or misspelled.</li>
+        <li><strong>Permission or 403 errors</strong> - your sheet was not shared with the <code>client_email</code> as an Editor.</li>
+        <li><strong>CORS or network errors</strong> - serve the site over HTTP/HTTPS and make sure the Backend URL ends in <code>/api/sync-sheet</code>.</li>
+      </ul>
+    </div>
+  </section>
+  </main>
+
+  <div id="commitModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="commitTitle">
+    <div class="modal panel">
+      <button id="closeModalBtn" class="close-modal" type="button" aria-label="Close">×</button>
+      <h3 id="commitTitle">Commit scouting data</h3>
+      <p class="hint">Choose what to do with the information you entered.</p>
+
+      <div class="choice-grid" id="choiceGrid">
+        <button id="qrChoiceBtn" type="button" class="primary choice-button">
+          <span>QR Code</span>
+          <small>Generate a QR code from this entry</small>
+        </button>
+        <button id="syncChoiceBtn" type="button" class="choice-button">
+          <span>Sync to Sheet</span>
+          <small>Send this entry to Google Sheets</small>
+        </button>
+      </div>
+
+      <div id="modalStatus" class="status hidden"></div>
+      <div id="modalQrBox" class="hidden"></div>
+
+      <div class="actions">
+        <button id="modalDownloadBtn" class="primary hidden" type="button">Download QR PNG</button>
+        <button id="modalBackBtn" class="secondary hidden" type="button">Back</button>
+        <button id="resetFormBtn" class="secondary" type="button">Reset Form</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="assets/js/app.js"></script>
 </body>
 </html>
+
+
+
+
