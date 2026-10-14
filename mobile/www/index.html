@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta http-equiv="refresh" content="8; url=https://home-grown-code.github.io/QR-Scout-Online/#/home">
+  <title>QR Scout</title>
+  <style>
+    html, body { margin: 0; min-height: 100%; background: #0d1320; color: #edf5ff;
+      font: 16px/1.5 system-ui, sans-serif; }
+    .wrap { display: grid; place-items: center; min-height: 100vh; padding: 24px; text-align: center; }
+    .card { max-width: 420px; background: #121b2a; border: 1px solid rgba(255,255,255,.09);
+      border-radius: 18px; padding: 28px 24px; }
+    .logo { width: 72px; height: 72px; }
+    h1 { font-size: 1.4rem; margin: 12px 0 8px; }
+    p { color: #b3c0d6; margin: 0 0 16px; }
+    button { cursor: pointer; border: none; border-radius: 10px; padding: 12px 18px;
+      font-weight: 700; color: #fff; background: linear-gradient(135deg, #4a8dff, #2b6ae8); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <img class="logo" src="qrscout-chef.svg" alt="QR Scout logo">
+      <h1 id="gateTitle">Loading QR Scout…</h1>
+      <p id="gateMsg">Connecting…</p>
+      <div id="gateActions"></div>
+    </div>
+  </div>
+  <script>
+    (function () {
+      var SITE = "https://home-grown-code.github.io/QR-Scout-Online/#/home";
+      var title = document.getElementById("gateTitle");
+      var msg = document.getElementById("gateMsg");
+      var actions = document.getElementById("gateActions");
+
+      function online() {
+        title.textContent = "Loading QR Scout…";
+        msg.textContent = "Connecting…";
+        actions.innerHTML = "";
+        location.replace(SITE);
+      }
+
+      function offline() {
+        title.textContent = "You're offline";
+        msg.textContent = "QR Scout needs an internet connection the first time it loads. " +
+          "Reconnect, then tap Retry. Entries saved on this device stay available.";
+        actions.innerHTML = "";
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.textContent = "Retry";
+        btn.onclick = function () {
+          if (navigator.onLine) online();
+          else { msg.textContent = "Still offline — reconnect and try again."; }
+        };
+        actions.appendChild(btn);
+      }
+
+      window.addEventListener("online", online);
+      window.addEventListener("offline", offline);
+      // If the meta-refresh fires while offline it just reloads this gate;
+      // the script above then shows the Retry card instead of a blank page.
+      if (navigator.onLine) online();
+      else offline();
+    })();
+  </script>
+</body>
+</html>

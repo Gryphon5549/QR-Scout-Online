@@ -1,6 +1,94 @@
 (() => {
   const $ = (id) => document.getElementById(id);
   const STORAGE_KEY = "qrscoutSavedState";
+  // Offline outbox: entries queued while the device has no connection, synced
+  // when it comes back (pit / airplane mode). Same-origin key, so the hosted
+  // site and the installed PWA share one queue per device.
+  const OUTBOX_KEY = "qrscoutOutbox";
+  function getOutbox() {
+    try {
+      const raw = localStorage.getItem(OUTBOX_KEY);
+      const list = raw ? JSON.parse(raw) : [];
+      return Array.isArray(list) ? list : [];
+    } catch (err) {
+      return [];
+    }
+  }
+  function saveOutbox(list) {
+    try {
+      localStorage.setItem(OUTBOX_KEY, JSON.stringify(list));
+    } catch (err) {
+      // Storage full/blocked: keep the in-memory entry flow working.
+    }
+    updateOutboxBadge();
+  }
+  function enqueueOffline(sheetId, sheetName, payload) {
+    const list = getOutbox();
+    list.push({
+      queuedAt: new Date().toISOString(),
+      sheetId: sheetId || "",
+      sheetName: sheetName || "Sheet1",
+      payload
+    });
+    saveOutbox(list);
+  }
+  function postEntry(sheetId, sheetName, payload) {
+    return fetch(BACKEND_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sheetId, sheetName, data: payload.data, row: payload.row })
+    }).then(async (res) => {
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || data.ok === false) {
+        const raw = data && (data.error || data.status);
+        throw new Error(raw || ("Sync failed (HTTP " + res.status + ")."));
+      }
+      return data.status || "Synced to Google Sheets.";
+    });
+  }
+  function flushOutbox() {
+    if (!navigator.onLine) return Promise.resolve(0);
+    let list = getOutbox();
+    if (!list.length) { updateOutboxBadge(); return Promise.resolve(0); }
+    let synced = 0;
+    const step = () => {
+      if (!list.length) return Promise.resolve();
+      const entry = list[0];
+      const liveId = ($("googleSheetId") && $("googleSheetId").value.trim()) || "";
+      const sheetId = liveId || entry.sheetId || "";
+      if (!sheetId) return Promise.resolve();
+      return postEntry(sheetId, entry.sheetName, entry.payload).then(
+        () => { list = list.slice(1); saveOutbox(list); synced += 1; return step(); },
+        () => {}
+      );
+    };
+    return step().then(() => {
+      const remaining = getOutbox().length;
+      if (synced > 0) {
+        setStatus(
+          remaining > 0
+            ? "Back online \u2014 synced " + synced + " queued " + (synced === 1 ? "entry" : "entries") + " (" + remaining + " still pending)."
+            : "Back online \u2014 synced " + synced + " queued " + (synced === 1 ? "entry" : "entries") + ".",
+          remaining > 0
+        );
+      } else { updateOutboxBadge(); }
+      return synced;
+    });
+  }
+  function updateOutboxBadge() {
+    const pending = getOutbox().length;
+    let badge = $("outboxBadge");
+    if (!badge) {
+      const scoutBtn = $("navScoutBtn");
+      if (!scoutBtn || !scoutBtn.parentElement) return;
+      badge = document.createElement("span");
+      badge.id = "outboxBadge";
+      badge.className = "outbox-badge hidden";
+      scoutBtn.parentElement.appendChild(badge);
+    }
+    badge.textContent = pending > 0 ? pending + " pending offline" : "";
+    badge.classList.toggle("hidden", pending === 0);
+  }
   // Shared backend that writes to Google Sheets, and the service account email
   // that each user's sheet must be shared with (as an Editor). Set these once.
   const BACKEND_URL = "https://qr-scout-online.onrender.com/api/sync-sheet";
@@ -832,8 +920,8 @@
   const navDownloadBtn = $("navDownloadBtn");
   if (navDownloadBtn) navDownloadBtn.addEventListener("click", showAppSection);
 
-  // PWA "Install app" support (Chrome/Edge/Android): reveal the install
-  // button on the App tab when the browser offers the install prompt.
+  // PWA "Install app" support (Chrome/Edge/Android): kept for browsers that
+  // offer direct install (the phone cards now point at the .apk/.ipa files).
   let deferredInstallPrompt = null;
   window.addEventListener("beforeinstallprompt", (e) => {
     e.preventDefault();
@@ -856,6 +944,8 @@
     if (pwaHint) pwaHint.textContent = "You're running the installed app — nice!";
   }
   window.addEventListener("hashchange", route);
+  window.addEventListener("online", () => { flushOutbox(); });
+  updateOutboxBadge();
 
   // Feedback form: name/team/email optional, feedback required. The backend
   // saves the row to the owner's Google Sheet; the browser then emails the

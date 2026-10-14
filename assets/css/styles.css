@@ -440,6 +440,30 @@ a.download-card:hover {
   line-height: 1.4;
 }
 
+/* Pending-offline badge next to the Scouter tab */
+#appNav .outbox-badge,
+.view-switcher .outbox-badge,
+.outbox-badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  background: rgba(247, 167, 74, 0.18);
+  border: 1px solid rgba(247, 167, 74, 0.55);
+  color: var(--orange);
+  vertical-align: middle;
+}
+
+/* Brand logo image */
+.brand-block .logo img {
+  width: 34px;
+  height: 34px;
+  display: block;
+  border-radius: 8px;
+}
+
 .hidden { display: none !important; }
 
 @media (max-width: 900px) {

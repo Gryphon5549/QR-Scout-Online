@@ -6,9 +6,16 @@
   "scripts": {
     "start": "node backend/server.js",
     "dev": "node backend/server.js",
-    "frontend": "python -m http.server 8000 --directory frontend"
+    "frontend": "python -m http.server 8000 --directory frontend",
+    "cap:sync": "cap sync",
+    "mobile:android": "cap sync android",
+    "mobile:ios": "cap sync ios"
   },
   "dependencies": {
+    "@capacitor/android": "^8.5.3",
+    "@capacitor/cli": "^8.5.3",
+    "@capacitor/core": "^8.5.3",
+    "@capacitor/ios": "^8.5.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",

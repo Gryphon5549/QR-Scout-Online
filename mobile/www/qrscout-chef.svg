@@ -1,0 +1,30 @@
+<svg viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- QR Scout chef-hat mark — transparent background. Orange #F26B0F. -->
+  <g stroke="#F26B0F" stroke-linecap="round" stroke-linejoin="round">
+    <!-- outer ring -->
+    <circle cx="256" cy="256" r="204" stroke-width="15"/>
+    <!-- hat dome -->
+    <path d="M154 208C154 128 196 84 256 84C316 84 358 128 358 208" stroke-width="14"/>
+    <!-- dome pleats -->
+    <path d="M208 104C204 140 204 170 206 202" stroke-width="10"/>
+    <path d="M256 96L256 202" stroke-width="10"/>
+    <path d="M304 104C308 140 308 170 306 202" stroke-width="10"/>
+    <!-- hat band -->
+    <rect x="158" y="202" width="196" height="56" rx="16" stroke-width="14"/>
+    <!-- face / base -->
+    <path d="M158 258L158 322C158 358 182 372 210 372L302 372C330 372 354 358 354 322L354 258" stroke-width="14"/>
+    <!-- left mitt -->
+    <rect x="66" y="232" width="60" height="118" rx="24" stroke-width="13"/>
+    <path d="M74 262H102" stroke-width="9"/>
+    <path d="M74 288H102" stroke-width="9"/>
+    <path d="M74 314H102" stroke-width="9"/>
+    <!-- right mitt -->
+    <rect x="386" y="232" width="60" height="118" rx="24" stroke-width="13"/>
+    <path d="M410 262H438" stroke-width="9"/>
+    <path d="M410 288H438" stroke-width="9"/>
+    <path d="M410 314H438" stroke-width="9"/>
+  </g>
+  <!-- eyes -->
+  <circle cx="230" cy="316" r="12" fill="#F26B0F"/>
+  <circle cx="282" cy="316" r="12" fill="#F26B0F"/>
+</svg>

@@ -1,9 +1,12 @@
-name: Build desktop apps
+name: Build desktop + mobile apps
 
-# Builds the Electron desktop shells for every platform and attaches the
-# installers to a GitHub Release when a v* tag is pushed. The site's App tab
-# links to releases/latest/download/<stable-name>, so file names must stay
-# stable (see artifactName in app/electron-builder.yml).
+# Builds the Electron desktop shells + Capacitor mobile shells and attaches
+# every installer to a GitHub Release when a v* tag is pushed. The site's App
+# tab links to releases/latest/download/<stable-name>, so file names must stay
+# stable (see artifactName in app/electron-builder.yml, and the mobile renames
+# below). Desktop builds are unsigned; the Android APK is unsigned (sideload);
+# the iPhone .ipa is unsigned (sideload via AltStore/Sideloadly — no paid
+# Apple Developer account needed to build it).
 on:
   workflow_dispatch:
   push:
@@ -105,10 +108,99 @@ jobs:
             dist-app/*.deb
           if-no-files-found: error
 
+  mobile-android:
+    name: Build Android app (APK)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Set up Java (Gradle needs a JDK)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Sync Capacitor shell
+        run: npx cap sync android
+
+      - name: Build unsigned APK
+        working-directory: android
+        run: ./gradlew assembleDebug --no-daemon
+
+      - name: Rename APK to stable name
+        run: |
+          mkdir -p dist-mobile
+          cp android/app/build/outputs/apk/debug/app-debug.apk dist-mobile/QRScout-android.apk
+          ls -la dist-mobile
+
+      - name: Upload Android artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: apps-Android
+          path: dist-mobile/*.apk
+          if-no-files-found: error
+
+  mobile-ios:
+    name: Build iPhone app (unsigned .ipa)
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Sync Capacitor shell
+        run: npx cap sync ios
+
+      - name: Build unsigned .ipa (no signing identity)
+        run: |
+          xcodebuild \
+            -workspace ios/App/App.xcworkspace \
+            -scheme App \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            build
+          APP_PATH=$(find ~/Library/Developer/Xcode/DerivedData -name "App.app" -type d | head -n 1)
+          echo "APP_PATH=$APP_PATH"
+          mkdir -p Payload dist-mobile
+          cp -R "$APP_PATH" Payload/
+          zip -r -y dist-mobile/QRScout-iphone.ipa Payload
+          rm -rf Payload
+          ls -la dist-mobile
+
+      - name: Upload iOS artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: apps-iOS
+          path: dist-mobile/*.ipa
+          if-no-files-found: error
+
   release:
     name: Publish GitHub release
     if: github.ref_type == 'tag'
-    needs: build
+    needs: [build, mobile-android, mobile-ios]
     runs-on: ubuntu-latest
     steps:
       - name: Download all artifacts
@@ -116,6 +208,9 @@ jobs:
         with:
           path: artifacts
           merge-multiple: true
+
+      - name: List installers
+        run: ls -la artifacts
 
       - name: Create release with installers
         uses: softprops/action-gh-release@v2
