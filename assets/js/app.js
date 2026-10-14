@@ -1,5 +1,27 @@
 (() => {
-  const $ = (id) => document.getElementById(id);
+  // Resolve an element by id. If it's missing (e.g. a stale index.html served
+  // against this script), return a harmless no-op stub instead of null so that
+  // chained calls like $(el).classList.add(...) never throw and break routing.
+  const $ = (id) => {
+    const el = document.getElementById(id);
+    if (el) return el;
+    const noop = () => {};
+    return new Proxy({}, {
+      get: (_t, prop) => {
+        if (prop === "classList") return { add: noop, remove: noop, toggle: () => false, contains: () => false };
+        if (prop === "addEventListener" || prop === "removeEventListener" || prop === "appendChild" || prop === "remove" || prop === "focus" || prop === "click" || prop === "scrollIntoView" || prop === "setSelectionRange") return noop;
+        if (prop === "dataset") return {};
+        if (prop === "style") return {};
+        if (prop === "parentElement" || prop === "nextSibling") return null;
+        // String/number-ish props: default to "" so chained .trim()/Number() are safe.
+        if (prop === "value" || prop === "textContent" || prop === "innerHTML" || prop === "className" || prop === "id") return "";
+        if (prop in _t) return _t[prop];
+        return "";
+      },
+      set: (_t, prop, value) => { _t[prop] = value; return true; },
+      has: (_t, prop) => prop in _t
+    });
+  };
   const STORAGE_KEY = "qrscoutSavedState";
   // Offline outbox: entries queued while the device has no connection, synced
   // when it comes back (pit / airplane mode). Same-origin key, so the hosted
