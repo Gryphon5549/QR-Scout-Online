@@ -5,7 +5,7 @@ const dotenv = require('dotenv');
 const { google } = require('googleapis');
 const nodemailer = require('nodemailer');
 
-dotenv.config({ path: path.resolve(__dirname, '.env') });
+dotenv.config({ path: path.resolve(__dirname, '..', '.env') });
 
 const app = express();
 const PORT = process.env.PORT || 3001;

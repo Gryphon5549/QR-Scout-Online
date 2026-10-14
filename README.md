@@ -50,9 +50,10 @@ Then install dependencies:
 npm install
 ```
 
-Then start the server:
+Then create your env file and start the server:
 
 ```bash
+cp .env.example .env
 npm start
 ```
 
@@ -88,7 +89,7 @@ Every feedback submission is delivered two ways:
 1. **Google Sheet** — the backend appends it to a **Feedback** tab in the Google Sheet behind `GOOGLE_SHEET_ID` (created automatically with headers), using the same service account as scouting sync.
 2. **Email to the site owner** — the browser sends it through [FormSubmit](https://formsubmit.co) (free, no signup). This happens client-side because FormSubmit and similar free relays block server-side calls from cloud hosts — but browser posts are their supported, intended usage. **The first-ever submission triggers an activation email** to the owner — click the confirmation link in it once and every later submission is delivered straight to their inbox.
 
-Optional overrides in `backend/.env` (and on your host, e.g. Render) — if SMTP is configured, the backend ALSO emails directly:
+Optional overrides in `.env` (and on your host, e.g. Render) — if SMTP is configured, the backend ALSO emails directly:
 
 ```env
 # FormSubmit recipient (defaults to the project owner):

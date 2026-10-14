@@ -6,7 +6,6 @@
   "scripts": {
     "start": "node backend/server.js",
     "dev": "node backend/server.js",
-    "frontend": "python -m http.server 8000 --directory frontend",
     "cap:sync": "cap sync",
     "mobile:android": "cap sync android",
     "mobile:ios": "cap sync ios"
