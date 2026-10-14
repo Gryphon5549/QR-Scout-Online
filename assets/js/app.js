@@ -1005,5 +1005,15 @@
       history.replaceState(null, "", "#/scout");
     }
   }
+  // PWA: register the service worker (same folder as the page, so the scope
+  // covers the whole site, including the GitHub Pages sub-path) so Chrome can
+  // offer "Install QR Scout" on the App tab.
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("sw.js").catch((err) => {
+        console.warn("Service worker registration failed:", err);
+      });
+    });
+  }
   route();
 })();
