@@ -9,6 +9,7 @@ directories:
 files:
   - main.js
   - package.json
+  - index.html
 win:
   target:
     - nsis

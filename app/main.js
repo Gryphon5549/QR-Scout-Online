@@ -1,8 +1,8 @@
 // QR Scout Online — desktop shell.
-// Loads the hosted site so every install always has the latest version.
+// Preloads the app's local HTML instead of fetching from the web,
+// so the app works offline and always uses the latest bundled version.
 const { app, BrowserWindow, shell } = require('electron');
-
-const SITE_URL = 'https://home-grown-code.github.io/QR-Scout-Online/';
+const path = require('path');
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -30,7 +30,9 @@ function createWindow() {
     return { action: 'deny' };
   });
 
-  win.loadURL(SITE_URL);
+  // Load the preloaded app HTML (local file, works offline)
+  const appHtmlPath = path.join(__dirname, 'index.html');
+  win.loadFile(appHtmlPath);
 }
 
 app.whenReady().then(() => {

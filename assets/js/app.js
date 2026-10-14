@@ -722,7 +722,7 @@
     const feedbackBtn = $("navFeedbackBtn");
     if (feedbackBtn) feedbackBtn.classList.toggle("active", which === "feedback");
     const downloadBtn = $("navDownloadBtn");
-    if (downloadBtn) downloadBtn.classList.toggle("active", which === "update");
+    if (downloadBtn) downloadBtn.classList.toggle("active", which === "app");
   }
 
   function route() {
@@ -733,7 +733,7 @@
       showScoutPage();
     } else if (hash === "#/feedback") {
       showFeedback();
-    } else if (hash === "#/update" || hash === "#/download") {
+    } else if (hash === "#/app" || hash === "#/download") {
       showUpdateSection();
     } else {
       showHome();
@@ -745,7 +745,7 @@
     $("scoutingPage").classList.add("hidden");
     $("howToUseSection").classList.add("hidden");
     $("feedbackSection").classList.add("hidden");
-    $("updateSection").classList.add("hidden");
+    $("appSection").classList.add("hidden");
     $("startGuideSection").classList.remove("hidden");
     setActiveTab("guide");
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -756,7 +756,7 @@
     $("scoutingPage").classList.add("hidden");
     $("howToUseSection").classList.add("hidden");
     $("startGuideSection").classList.add("hidden");
-    $("updateSection").classList.add("hidden");
+    $("appSection").classList.add("hidden");
     $("feedbackSection").classList.remove("hidden");
     setActiveTab("feedback");
     if ((location.hash || "").toLowerCase() !== "#/feedback") {
@@ -768,7 +768,7 @@
   function showHome() {
     $("startGuideSection").classList.add("hidden");
     $("feedbackSection").classList.add("hidden");
-    $("updateSection").classList.add("hidden");
+    $("appSection").classList.add("hidden");
     $("welcomeSection").classList.remove("hidden");
     $("howToUseSection").classList.remove("hidden");
     $("scoutingPage").classList.add("hidden");
@@ -776,16 +776,16 @@
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  function showUpdateSection() {
+  function showAppSection() {
     $("welcomeSection").classList.add("hidden");
     $("scoutingPage").classList.add("hidden");
     $("howToUseSection").classList.add("hidden");
     $("startGuideSection").classList.add("hidden");
     $("feedbackSection").classList.add("hidden");
-    $("updateSection").classList.remove("hidden");
-    setActiveTab("update");
-    if ((location.hash || "").toLowerCase() !== "#/update") {
-      history.replaceState(null, "", "#/update");
+    $("appSection").classList.remove("hidden");
+    setActiveTab("app");
+    if ((location.hash || "").toLowerCase() !== "#/app") {
+      history.replaceState(null, "", "#/app");
     }
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -803,7 +803,7 @@
     }
     $("startGuideSection").classList.add("hidden");
     $("feedbackSection").classList.add("hidden");
-    $("updateSection").classList.add("hidden");
+    $("appSection").classList.add("hidden");
     $("welcomeSection").classList.add("hidden");
     $("howToUseSection").classList.remove("hidden");
     $("scoutingPage").classList.remove("hidden");
@@ -825,7 +825,7 @@
     config = obj;
     $("welcomeSection").classList.add("hidden");
     $("feedbackSection").classList.add("hidden");
-    $("updateSection").classList.add("hidden");
+    $("appSection").classList.add("hidden");
     $("scoutingPage").classList.remove("hidden");
     renderForm();
     $("jsonEditor").value = JSON.stringify(config, null, 2);
@@ -918,7 +918,7 @@
   $("navGuideBtn").addEventListener("click", showStartGuide);
   $("navFeedbackBtn").addEventListener("click", showFeedback);
   const navDownloadBtn = $("navDownloadBtn");
-  if (navDownloadBtn) navDownloadBtn.addEventListener("click", showUpdateSection);
+  if (navDownloadBtn) navDownloadBtn.addEventListener("click", showAppSection);
 
   // PWA "Install app" support (Chrome/Edge/Android): kept for browsers that
   // offer direct install (the phone cards now point at the .apk/.ipa files).
