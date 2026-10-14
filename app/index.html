@@ -52,6 +52,19 @@
     .qr-out .box { background: #fff; padding: 12px; border-radius: 12px; display: inline-block; }
     .qr-out img, .qr-out canvas { display: block; }
     .hidden { display: none !important; }
+    .update-check { padding: 16px; border: 1px solid var(--border); border-radius: 12px; background: rgba(255,255,255,.02); }
+    .version-row { display: flex; flex-wrap: wrap; gap: 24px; margin-bottom: 14px; }
+    .version-item { display: flex; flex-direction: column; gap: 4px; }
+    .version-label { font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+    .version-value { font-size: 1.3rem; font-weight: 800; }
+    .button-link { display: inline-flex; align-items: center; padding: 12px 18px; border-radius: 10px; border: 1px solid var(--border); color: var(--text); text-decoration: none; font-weight: 700; }
+    a.button-link:hover { border-color: rgba(74,141,255,.6); background: rgba(74,141,255,.08); }
+    .download-heading { margin-top: 22px; }
+    .download-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin-top: 12px; }
+    .download-card { display: flex; flex-direction: column; gap: 6px; padding: 14px; border: 1px solid var(--border); border-radius: 12px; background: rgba(255,255,255,.02); color: var(--text); text-decoration: none; }
+    a.download-card:hover { border-color: rgba(74,141,255,.6); background: rgba(74,141,255,.08); }
+    .download-card .download-name { font-weight: 700; }
+    .download-card small { color: var(--muted); line-height: 1.4; }
   </style>
 </head><body>
   <div class="wrap">
@@ -59,6 +72,7 @@
       <div class="inner">
         <button id="tabScout" type="button" class="active">Scout</button>
         <button id="tabSetup" type="button">Setup</button>
+        <button id="tabUpdate" type="button">Update</button>
       </div>
     </div>
 
@@ -107,6 +121,67 @@
           </div>
         </div>
       </div>
+    </section>
+
+    <section id="updateSection" class="panel hidden">
+      <h2>Check for updates</h2>
+      <p class="hint">New versions of QR Scout are published on GitHub. Check here for the latest release, then install it for your device. (This is the only feature that needs an internet connection.)</p>
+
+      <div class="update-check">
+        <div class="version-row">
+          <div class="version-item">
+            <span class="version-label">This version</span>
+            <span class="version-value" id="currentVersion">v1.0.0</span>
+          </div>
+          <div class="version-item">
+            <span class="version-label">Latest on GitHub</span>
+            <span class="version-value" id="latestVersion">—</span>
+          </div>
+        </div>
+        <div class="actions">
+          <button id="checkUpdatesBtn" type="button" class="primary">Check for updates</button>
+          <a class="button-link" id="releasesLink" href="https://github.com/Home-Grown-Code/QR-Scout-Online/releases/latest" target="_blank" rel="noopener">Open releases page</a>
+        </div>
+        <div id="updateStatus" class="status">Tap “Check for updates” to look up the latest GitHub release.</div>
+      </div>
+
+      <h3 class="download-heading">Download the latest version</h3>
+      <div class="download-grid" id="downloadGrid">
+        <a class="download-card" href="https://github.com/Home-Grown-Code/QR-Scout-Online/releases/latest/download/QRScout-win-x64.exe">
+          <span class="download-name">Windows</span>
+          <small>64-bit Intel/AMD — installer (.exe)</small>
+        </a>
+        <a class="download-card" href="https://github.com/Home-Grown-Code/QR-Scout-Online/releases/latest/download/QRScout-win-arm64.exe">
+          <span class="download-name">Windows on ARM</span>
+          <small>Snapdragon / ARM laptops — installer (.exe)</small>
+        </a>
+        <a class="download-card" href="https://github.com/Home-Grown-Code/QR-Scout-Online/releases/latest/download/QRScout-mac-arm64.dmg">
+          <span class="download-name">Mac (Apple Silicon)</span>
+          <small>M1 / M2 / M3 / M4 — disk image (.dmg)</small>
+        </a>
+        <a class="download-card" href="https://github.com/Home-Grown-Code/QR-Scout-Online/releases/latest/download/QRScout-mac-x64.dmg">
+          <span class="download-name">Mac (Intel)</span>
+          <small>2020 and earlier — disk image (.dmg)</small>
+        </a>
+        <a class="download-card" href="https://github.com/Home-Grown-Code/QR-Scout-Online/releases/latest/download/QRScout-linux-x64.AppImage">
+          <span class="download-name">Linux (64-bit)</span>
+          <small>AppImage — chmod +x, then run</small>
+        </a>
+        <a class="download-card" href="https://github.com/Home-Grown-Code/QR-Scout-Online/releases/latest/download/QRScout-linux-arm64.AppImage">
+          <span class="download-name">Linux ARM</span>
+          <small>Raspberry Pi / ARM boards — AppImage</small>
+        </a>
+        <a class="download-card" href="https://github.com/Home-Grown-Code/QR-Scout-Online/releases/latest/download/QRScout-android.apk">
+          <span class="download-name">Android</span>
+          <small>Phone / tablet — app file (.apk, sideload)</small>
+        </a>
+        <a class="download-card" href="https://github.com/Home-Grown-Code/QR-Scout-Online/releases/latest/download/QRScout-iphone.ipa">
+          <span class="download-name">iPhone</span>
+          <small>App file (.ipa, sideload via AltStore/Sideloadly)</small>
+        </a>
+      </div>
+
+      <p class="hint">These installers are not code-signed. On macOS, right-click the app and choose <strong>Open</strong> the first time. On Windows, choose <em>More info → Run anyway</em> if SmartScreen warns you.</p>
     </section>
   </div>
   <script src="qrcode.min.js"></script>
@@ -377,14 +452,69 @@
 
       function switchTab(which) {
         var scout = which === "scout";
+        var setup = which === "setup";
         $("scoutSection").classList.toggle("hidden", !scout);
-        $("setupSection").classList.toggle("hidden", scout);
+        $("setupSection").classList.toggle("hidden", !setup);
+        $("updateSection").classList.toggle("hidden", which !== "update");
         $("tabScout").classList.toggle("active", scout);
-        $("tabSetup").classList.toggle("active", !scout);
+        $("tabSetup").classList.toggle("active", setup);
+        $("tabUpdate").classList.toggle("active", which === "update");
+      }
+
+      // ---- Update check (only feature that uses the network) ----
+      var APP_VERSION = "1.0.0";
+      var GITHUB_REPO = "Home-Grown-Code/QR-Scout-Online";
+      var RELEASES_API = "https://api.github.com/repos/" + GITHUB_REPO + "/releases/latest";
+      var RELEASES_PAGE = "https://github.com/" + GITHUB_REPO + "/releases/latest";
+
+      function normalizeVersion(value) {
+        return String(value || "").trim().replace(/^v/i, "");
+      }
+      function versionNewer(latest, current) {
+        var a = normalizeVersion(latest).split(".").map(function (n) { return parseInt(n, 10) || 0; });
+        var b = normalizeVersion(current).split(".").map(function (n) { return parseInt(n, 10) || 0; });
+        for (var i = 0; i < Math.max(a.length, b.length); i++) {
+          var diff = (a[i] || 0) - (b[i] || 0);
+          if (diff !== 0) return diff > 0;
+        }
+        return false;
+      }
+      function setUpdateStatus(message, state) {
+        var el = $("updateStatus"); if (!el) return;
+        el.textContent = message;
+        el.className = "status" + (state === "ok" ? " ok" : state === "error" ? " error" : "");
+      }
+      async function checkForUpdates() {
+        var btn = $("checkUpdatesBtn");
+        if (btn) btn.disabled = true;
+        setUpdateStatus("Checking GitHub for the latest release...");
+        try {
+          var res = await fetch(RELEASES_API, { headers: { Accept: "application/vnd.github+json" } });
+          if (!res.ok) throw new Error("GitHub responded " + res.status);
+          var release = await res.json();
+          var latest = release.tag_name || "";
+          var published = release.published_at ? new Date(release.published_at).toLocaleDateString() : "";
+          var currentEl = $("currentVersion");
+          if (currentEl) currentEl.textContent = "v" + APP_VERSION;
+          var latestEl = $("latestVersion");
+          if (latestEl) latestEl.textContent = latest ? normalizeVersion(latest) : "unknown";
+          if (latest && versionNewer(latest, APP_VERSION)) {
+            setUpdateStatus("A newer version is available: " + latest + (published ? " (released " + published + ")" : "") + ". Install it from the downloads below.", "ok");
+          } else if (latest) {
+            setUpdateStatus("You're up to date — latest release is " + latest + (published ? " (" + published + ")" : "") + ".", "ok");
+          } else {
+            setUpdateStatus("No published releases found yet. Check back after the next tagged build.", "error");
+          }
+        } catch (err) {
+          setUpdateStatus("Couldn't reach GitHub to check for updates (" + err.message + "). You need an internet connection for this — open the releases page manually when online.", "error");
+        } finally {
+          if (btn) btn.disabled = false;
+        }
       }
 
       $("tabScout").addEventListener("click", function () { switchTab("scout"); });
       $("tabSetup").addEventListener("click", function () { switchTab("setup"); });
+      $("tabUpdate").addEventListener("click", function () { switchTab("update"); });
       $("loadSample").addEventListener("click", function () {
         try { applyConfig(sampleConfig); switchTab("scout"); }
         catch (e) { setConfigStatus(e.message, true); }
@@ -414,6 +544,7 @@
       });
       $("formArea").addEventListener("input", saveState);
       $("formArea").addEventListener("change", saveState);
+      $("checkUpdatesBtn").addEventListener("click", checkForUpdates);
 
       restoreState();
       if (!config) switchTab("setup");
