@@ -10,6 +10,8 @@ files:
   - main.js
   - package.json
   - index.html
+  - qrcode.min.js
+  - assets/**
 win:
   target:
     - nsis

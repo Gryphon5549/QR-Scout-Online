@@ -1,132 +1,100 @@
-# QR Scout Online — 2549 Millerbots Scouting, QR Sheets & Google Sheets
+# QR Scout Online
 
-**2549 Millerbots scouting** workflow — a free **QR scout** / **FRC scouting** app that collects match scouting data on any device, backs it up as **QR sheets**, and syncs scouting data straight into **your own Google Sheets**.
+QR Scout Online is a browser-based scouting app for FIRST Robotics Competition (FRC) teams. Fill out a match scouting form on any phone, tablet, or desktop, then save each entry as a QR-code backup or sync it straight into your own Google Sheet. It also includes a feedback page and installable desktop and mobile app shells.
 
-This project is the simplified Team 2549 (Millerbots) scouting workflow — also searchable as *2549 scouting*, *Millerbots 2549*, *QR scout online*, *FRC match scouting*, and *scouting to Google Sheets*.
+## Using the hosted site (no setup)
 
-## New architecture
+The easiest way to use QR Scout Online is the deployed site. You do not need to run or host anything yourself.
 
-- Frontend: GitHub Pages or localhost
-- Backend: lightweight Node/Express API
-- Data destination: Google Sheets via Google Sheets API with a service account
+1. Create a new Google Sheet (open `sheets.new`).
+2. **Share** that sheet with the app's service account email as an **Editor**. The email is shown on the site's **Start guide** tab. This is the only permission step, and it is what lets the site write rows into your sheet.
+3. On the **Home** tab, import a scouting config (upload your own JSON or click **Load sample**).
+4. On the **Scout** tab, click **Show sync**, paste your **Google Sheet ID** (the part of the sheet URL between `/d/` and `/edit`), optionally set a tab name, and click **Save sheet**.
+5. Fill out the form, click **Commit**, then choose **Sync to Sheet**. Each committed entry is appended as a new row in **your own** spreadsheet. Choose **QR Code** instead to turn the entry into a scannable offline backup.
 
-This is the final flow:
+Entries committed while offline are queued on the device and synced automatically when it reconnects. Feedback sent from the **Feedback** tab goes to the site owner (a `Feedback` tab and, when configured, an email), not to your scouting sheet.
 
-1. The website is served from GitHub Pages or localhost.
-2. The user fills out a scouting form.
-3. The browser sends a POST request to the backend API URL.
-4. The backend authenticates to Google Sheets with a service account.
-5. The backend appends the row to the target sheet/tab.
+## How it works
 
-This avoids Google Apps Script and removes the browser-side fetch issues caused by static-site restrictions.
+- The website (the scouting form) is a static site. The deployed copy runs on GitHub Pages; the desktop and mobile apps just load that same hosted site.
+- A small Node.js backend receives scouting entries and feedback. The deployed copy runs on Render.
+- **Scouting:** each scout enters the ID of their own Google Sheet and shares it with the backend's service account (as an Editor). The backend appends one row per entry to that sheet, so nobody ever shares a Google password with the app.
+- **Feedback:** submissions are saved to a `Feedback` tab in the site owner's sheet and can be emailed when SMTP is configured.
+- QR codes and the offline outbox let you keep or transfer entries when you have no connection.
 
-## Setup steps
+The website and the backend are separate deployments. Hosting the website does not start the backend. The sync and feedback URLs used by the site are set once as constants at the top of `assets/js/app.js`.
 
-### 1) Host the website
-Push this repo to GitHub and enable GitHub Pages, or run the page locally with a local server.
+## Run the backend locally (self-hosting)
 
-### 2) Create the Google Cloud service account
-1. Open Google Cloud Console.
-2. Create a new project or use an existing project.
-3. Enable the Google Sheets API.
-4. Create a service account.
-5. Create a private key JSON file.
-6. Share the target Google Sheet with the service account email address as an Editor.
+You need Node.js and npm installed.
 
-### 3) Configure the backend
-Copy `.env.example` to `.env` and fill in the values:
+1. Install the project dependencies from the repository root:
 
-```env
-PORT=3001
-GOOGLE_SHEET_ID=your_sheet_id_here
-GOOGLE_SERVICE_ACCOUNT_EMAIL=frc-scout@frc-scout-511222.iam.gserviceaccount.com
-GOOGLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
-SHEET_NAME=Scouting
+   ```bash
+   npm install
+   ```
+
+2. Copy `.env.example` to `.env` and fill in the Google Sheets settings described below.
+
+3. Start the backend:
+
+   ```bash
+   npm start
+   ```
+
+By default, the API listens at `http://localhost:3001`. Check that it is running at `http://localhost:3001/health`.
+
+### Google Sheets setup
+
+1. In Google Cloud, create or choose a project and enable the Google Sheets API.
+2. Create a service account and a JSON key for it.
+3. Share the spreadsheet with the service account email and give it Editor access.
+4. Put the spreadsheet ID and service account credentials in the root `.env` file:
+
+   ```env
+   PORT=3001
+   GOOGLE_SHEET_ID=your_google_sheet_id
+   GOOGLE_SERVICE_ACCOUNT_EMAIL=your-service-account@your-project.iam.gserviceaccount.com
+   GOOGLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nYOUR_PRIVATE_KEY_HERE\n-----END PRIVATE KEY-----\n"
+   SHEET_NAME=Scouting
+   ```
+
+Keep `.env` and the service-account key private. Do not commit credentials to the repository. The backend creates the scouting tab if it does not already exist. The tab name defaults to `Scouting` and can be changed with `SHEET_NAME`. See `.env.example` for the optional feedback settings (`FEEDBACK_SHEET_NAME`, `FEEDBACK_TO_EMAIL`, and the `SMTP_*` values).
+
+## Run the website locally
+
+The site is a static website. Serve the repository root with a local web server and open the address it provides. Do not open `index.html` directly as a `file://` URL; browser requests and app features need an HTTP or HTTPS origin.
+
+To point the site at your local backend, edit the two constants near the top of `assets/js/app.js` (they default to the hosted Render URLs):
+
+```js
+const BACKEND_URL = "http://localhost:3001/api/sync-sheet";
+const FEEDBACK_URL = "http://localhost:3001/api/feedback";
 ```
 
-Then install dependencies:
+## Deploy
 
-```bash
-npm install
-```
+1. Publish the repository root (including `index.html` and `assets/`) to a static host such as GitHub Pages.
+2. Deploy the Node.js backend separately using a host that supports Node.js.
+3. Configure the backend environment variables on that host and make sure its service account can edit the target spreadsheet.
+4. Set `BACKEND_URL` and `FEEDBACK_URL` in `assets/js/app.js` to your deployed backend URLs. The current hosted endpoints are `https://qr-scout-online.onrender.com/api/sync-sheet` and `https://qr-scout-online.onrender.com/api/feedback`.
 
-Then create your env file and start the server:
+The backend provides `GET /health`, `POST /api/sync-sheet`, and `POST /api/feedback` routes. The feedback route writes to a `Feedback` tab by default and can send email directly when the `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, and `SMTP_PASS` settings are present. The feedback page also has a browser-based email fallback; the server's sheet and SMTP delivery behavior does not depend on that fallback.
 
-```bash
-cp .env.example .env
-npm start
-```
+## Desktop and mobile apps
 
-### 4) Deploy the frontend and backend
-Use the repo as follows:
+The repository includes installable app shells that load the hosted website:
 
-- GitHub Pages hosts the frontend from the repo root (`index.html` and the `assets/` folder).
-- A hosted backend such as Render, Railway, or a small VPS runs the Node API.
-- The frontend saves the backend API URL in the browser and sends full JSON payloads there.
+- **Desktop:** The Electron app is in `app/`. Run it locally with `cd app`, `npm install`, and `npm start`.
+- **Android and iOS:** Capacitor project files are in `android/` and `ios/`. The top-level npm scripts include `npm run mobile:android` and `npm run mobile:ios` to sync the web assets into those projects; you still need the platform's development tools to build them.
+- **Release builds:** `.github/workflows/build-apps.yml` builds desktop and mobile packages when run manually or when a `v*` tag is pushed. Builds are unsigned, so operating systems may show a security warning and mobile installs may require sideloading.
 
-For example:
+## Useful files
 
-- Frontend URL: https://home-grown-code.github.io/QR-Scout-Online/
-- Backend URL: https://qr-scout-online.onrender.com/api/sync-sheet
-
-### 5) Use the website
-Open the site over HTTP, not as a file path.
-
-Use the backend URL in the sync panel:
-
-- http://localhost:3001/api/sync-sheet
-
-When deployed, use your hosted backend URL instead.
-
-### 6) Test one real sync
-Fill out a form, click Commit, and then click Sync to Sheet.
-
-If the backend works, a new row should appear in the target Google Sheet.
-
-### 7) How feedback is delivered
-Every feedback submission is delivered two ways:
-
-1. **Google Sheet** — the backend appends it to a **Feedback** tab in the Google Sheet behind `GOOGLE_SHEET_ID` (created automatically with headers), using the same service account as scouting sync.
-2. **Email to the site owner** — the browser sends it through [FormSubmit](https://formsubmit.co) (free, no signup). This happens client-side because FormSubmit and similar free relays block server-side calls from cloud hosts — but browser posts are their supported, intended usage. **The first-ever submission triggers an activation email** to the owner — click the confirmation link in it once and every later submission is delivered straight to their inbox.
-
-Optional overrides in `.env` (and on your host, e.g. Render) — if SMTP is configured, the backend ALSO emails directly:
-
-```env
-# FormSubmit recipient (defaults to the project owner):
-FEEDBACK_TO_EMAIL=your_email_here
-# Optional direct SMTP from the backend:
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=465
-SMTP_USER=your_smtp_username_here
-SMTP_PASS=your_smtp_password_here
-# Sheet tab name used for delivery (default Feedback):
-FEEDBACK_SHEET_NAME=Feedback
-```
-
-For Gmail SMTP, create an **App Password** (Google Account → Security → 2-Step Verification → App passwords) and use it as `SMTP_PASS` — the normal login password will not work.
-
-### 8) The App tab & desktop builds
-The **App** tab (`#/app`) offers downloadable desktop versions of QR Scout Online plus installable web-app (PWA) support for Chrome/Edge.
-
-- **Desktop apps** live in `app/` — a tiny [Electron](https://electronjs.org) shell that loads the hosted site, so every install always runs the latest version.
-- **CI builds them** (`.github/workflows/build-apps.yml`) for Windows x64/ARM, macOS Intel/Apple Silicon, and Linux x64/ARM (AppImage + deb). Push a tag like `v1.0.0` (or run the workflow manually) — installers are attached to the GitHub Release with **stable file names** (`QRScout-win-x64.exe`, `QRScout-mac-arm64.dmg`, …) so the App tab's `releases/latest/download/...` links always point at the newest build.
-- **Chrome install**: the site ships a `manifest.webmanifest`, so Chrome shows “Install QR Scout” (menu ⋮ → Install, or the button on the App tab).
-- Local dev: `cd app && npm install && npm start`.
-
-The installers are not code-signed (no certificates in this repo): on macOS right-click → **Open** the first time; on Windows choose **More info → Run anyway** if SmartScreen warns.
-
-## Important
-
-Do not open the site as a local HTML file. The browser fetch will fail from a file:// page.
-
-Always use:
-
-- http://localhost:8000 for the site frontend, and
-- http://localhost:3001 for the backend API while testing locally
-
-## Important files
-
-- `index.html` — frontend page and UI
-- `assets/js/app.js` — form logic and sync logic
-- `server.js` — Express API backend
-- `.env.example` — backend environment variables
+- `index.html` and `assets/` — website and its frontend code
+- `assets/js/app.js` — frontend logic; also holds `BACKEND_URL` and `FEEDBACK_URL`
+- `backend/server.js` — API server and Google Sheets integration
+- `.env.example` — example backend configuration (no real credentials)
+- `app/` — Electron desktop app
+- `android/`, `ios/`, `mobile/`, and `capacitor.config.js` — Capacitor mobile app shells
+- `.github/workflows/build-apps.yml` — app build workflow

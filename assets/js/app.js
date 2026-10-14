@@ -1,4 +1,4 @@
-﻿(() => {
+(() => {
   const $ = (id) => document.getElementById(id);
   const STORAGE_KEY = "qrscoutSavedState";
   // Offline outbox: entries queued while the device has no connection, synced
@@ -94,6 +94,12 @@
   const BACKEND_URL = "https://qr-scout-online.onrender.com/api/sync-sheet";
   const FEEDBACK_URL = "https://qr-scout-online.onrender.com/api/feedback";
   const SERVICE_EMAIL = "frc-scout@frc-scout-511222.iam.gserviceaccount.com";
+  // Version of this build. Keep in sync with package.json and the GitHub release
+  // tags (v*) — the Update tab compares this against the latest GitHub release.
+  const APP_VERSION = "1.0.0";
+  const GITHUB_REPO = "Home-Grown-Code/QR-Scout-Online";
+  const RELEASES_API = `https://api.github.com/repos/${GITHUB_REPO}/releases/latest`;
+  const RELEASES_PAGE = `https://github.com/${GITHUB_REPO}/releases/latest`;
   let config = null;
   let lastPayload = "";
   let shouldAdvanceMatch = false;
@@ -721,8 +727,8 @@
     $("navGuideBtn").classList.toggle("active", which === "guide");
     const feedbackBtn = $("navFeedbackBtn");
     if (feedbackBtn) feedbackBtn.classList.toggle("active", which === "feedback");
-    const downloadBtn = $("navDownloadBtn");
-    if (downloadBtn) downloadBtn.classList.toggle("active", which === "app");
+    const updateBtn = $("navUpdateBtn");
+    if (updateBtn) updateBtn.classList.toggle("active", which === "update");
   }
 
   function route() {
@@ -733,7 +739,7 @@
       showScoutPage();
     } else if (hash === "#/feedback") {
       showFeedback();
-    } else if (hash === "#/app" || hash === "#/download") {
+    } else if (hash === "#/update" || hash === "#/app" || hash === "#/download") {
       showUpdateSection();
     } else {
       showHome();
@@ -745,7 +751,7 @@
     $("scoutingPage").classList.add("hidden");
     $("howToUseSection").classList.add("hidden");
     $("feedbackSection").classList.add("hidden");
-    $("appSection").classList.add("hidden");
+    $("updateSection").classList.add("hidden");
     $("startGuideSection").classList.remove("hidden");
     setActiveTab("guide");
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -756,7 +762,7 @@
     $("scoutingPage").classList.add("hidden");
     $("howToUseSection").classList.add("hidden");
     $("startGuideSection").classList.add("hidden");
-    $("appSection").classList.add("hidden");
+    $("updateSection").classList.add("hidden");
     $("feedbackSection").classList.remove("hidden");
     setActiveTab("feedback");
     if ((location.hash || "").toLowerCase() !== "#/feedback") {
@@ -768,7 +774,7 @@
   function showHome() {
     $("startGuideSection").classList.add("hidden");
     $("feedbackSection").classList.add("hidden");
-    $("appSection").classList.add("hidden");
+    $("updateSection").classList.add("hidden");
     $("welcomeSection").classList.remove("hidden");
     $("howToUseSection").classList.remove("hidden");
     $("scoutingPage").classList.add("hidden");
@@ -776,18 +782,83 @@
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  function showAppSection() {
+  function normalizeVersion(value) {
+    return String(value || "").trim().replace(/^v/i, "");
+  }
+
+  function versionNewer(latest, current) {
+    const a = normalizeVersion(latest).split(".").map((n) => parseInt(n, 10) || 0);
+    const b = normalizeVersion(current).split(".").map((n) => parseInt(n, 10) || 0);
+    for (let i = 0; i < Math.max(a.length, b.length); i++) {
+      const diff = (a[i] || 0) - (b[i] || 0);
+      if (diff !== 0) return diff > 0;
+    }
+    return false;
+  }
+
+  function setUpdateStatus(message, state) {
+    const el = $("updateStatus");
+    if (!el) return;
+    el.textContent = message;
+    el.className = "status" + (state === "ok" ? " ok" : state === "error" ? " error" : "");
+  }
+
+  async function checkForUpdates() {
+    const btn = $("checkUpdatesBtn");
+    if (btn) btn.disabled = true;
+    setUpdateStatus("Checking GitHub for the latest release…");
+    try {
+      const res = await fetch(RELEASES_API, {
+        headers: { Accept: "application/vnd.github+json" }
+      });
+      if (!res.ok) throw new Error(`GitHub responded ${res.status}`);
+      const release = await res.json();
+      const latest = release.tag_name || "";
+      const published = release.published_at
+        ? new Date(release.published_at).toLocaleDateString()
+        : "";
+
+      const currentEl = $("currentVersion");
+      if (currentEl) currentEl.textContent = "v" + APP_VERSION;
+      const latestEl = $("latestVersion");
+      if (latestEl) latestEl.textContent = latest ? normalizeVersion(latest) : "unknown";
+
+      if (latest && versionNewer(latest, APP_VERSION)) {
+        setUpdateStatus(
+          `A newer version is available: ${latest}${published ? ` (released ${published})` : ""}. Download it below.`,
+          "ok"
+        );
+      } else if (latest) {
+        setUpdateStatus(
+          `You're up to date — latest release is ${latest}${published ? ` (${published})` : ""}.`,
+          "ok"
+        );
+      } else {
+        setUpdateStatus("No published releases found yet. Check back after the next tagged build.", "error");
+      }
+    } catch (err) {
+      setUpdateStatus(
+        `Couldn't reach GitHub to check for updates (${err.message}). You can still open the releases page manually.`,
+        "error"
+      );
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  }
+
+  function showUpdateSection() {
     $("welcomeSection").classList.add("hidden");
     $("scoutingPage").classList.add("hidden");
     $("howToUseSection").classList.add("hidden");
     $("startGuideSection").classList.add("hidden");
     $("feedbackSection").classList.add("hidden");
-    $("appSection").classList.remove("hidden");
-    setActiveTab("app");
-    if ((location.hash || "").toLowerCase() !== "#/app") {
-      history.replaceState(null, "", "#/app");
+    $("updateSection").classList.remove("hidden");
+    setActiveTab("update");
+    if ((location.hash || "").toLowerCase() !== "#/update") {
+      history.replaceState(null, "", "#/update");
     }
     window.scrollTo({ top: 0, behavior: "smooth" });
+    checkForUpdates();
   }
 
   function showScoutPage() {
@@ -803,7 +874,7 @@
     }
     $("startGuideSection").classList.add("hidden");
     $("feedbackSection").classList.add("hidden");
-    $("appSection").classList.add("hidden");
+    $("updateSection").classList.add("hidden");
     $("welcomeSection").classList.add("hidden");
     $("howToUseSection").classList.remove("hidden");
     $("scoutingPage").classList.remove("hidden");
@@ -825,7 +896,7 @@
     config = obj;
     $("welcomeSection").classList.add("hidden");
     $("feedbackSection").classList.add("hidden");
-    $("appSection").classList.add("hidden");
+    $("updateSection").classList.add("hidden");
     $("scoutingPage").classList.remove("hidden");
     renderForm();
     $("jsonEditor").value = JSON.stringify(config, null, 2);
@@ -917,8 +988,10 @@
   $("navScoutBtn").addEventListener("click", showScoutPage);
   $("navGuideBtn").addEventListener("click", showStartGuide);
   $("navFeedbackBtn").addEventListener("click", showFeedback);
-  const navDownloadBtn = $("navDownloadBtn");
-  if (navDownloadBtn) navDownloadBtn.addEventListener("click", showAppSection);
+  const navUpdateBtn = $("navUpdateBtn");
+  if (navUpdateBtn) navUpdateBtn.addEventListener("click", showUpdateSection);
+  const checkUpdatesBtn = $("checkUpdatesBtn");
+  if (checkUpdatesBtn) checkUpdatesBtn.addEventListener("click", checkForUpdates);
 
   // PWA "Install app" support (Chrome/Edge/Android): kept for browsers that
   // offer direct install (the phone cards now point at the .apk/.ipa files).

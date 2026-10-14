@@ -440,6 +440,60 @@ a.download-card:hover {
   line-height: 1.4;
 }
 
+/* ---------- Update tab ---------- */
+.update-check {
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.version-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin-bottom: 14px;
+}
+
+.version-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.version-label {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+.version-value {
+  font-size: 1.3rem;
+  font-weight: 800;
+}
+
+.button-link {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  color: var(--text);
+  text-decoration: none;
+  font-weight: 700;
+}
+
+a.button-link:hover {
+  border-color: rgba(74, 141, 255, 0.6);
+  background: rgba(74, 141, 255, 0.08);
+}
+
+.download-heading {
+  margin-top: 24px;
+}
+
 /* Pending-offline badge next to the Scouter tab */
 #appNav .outbox-badge,
 .view-switcher .outbox-badge,

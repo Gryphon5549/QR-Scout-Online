@@ -8,7 +8,10 @@
     "dev": "node backend/server.js",
     "cap:sync": "cap sync",
     "mobile:android": "cap sync android",
-    "mobile:ios": "cap sync ios"
+    "mobile:ios": "cap sync ios",
+    "assets:generate": "capacitor-assets generate",
+    "assets:android": "capacitor-assets generate --android",
+    "assets:ios": "capacitor-assets generate --ios"
   },
   "dependencies": {
     "@capacitor/android": "^8.5.3",
@@ -20,5 +23,8 @@
     "express": "^4.19.2",
     "googleapis": "^144.0.0",
     "nodemailer": "^10.1.0"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^3.0.5"
   }
 }
