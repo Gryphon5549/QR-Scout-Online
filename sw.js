@@ -7,7 +7,7 @@ const SHELL = [
   "./manifest.webmanifest",
   "./assets/css/styles.css",
   "./assets/js/app.js",
-  "./assets/images/millerbots-logo.svg"
+  "./assets/images/millerbot-orange.png"
 ];
 
 self.addEventListener("install", (event) => {

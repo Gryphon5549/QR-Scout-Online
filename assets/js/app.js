@@ -1,4 +1,4 @@
-(() => {
+﻿(() => {
   const $ = (id) => document.getElementById(id);
   const STORAGE_KEY = "qrscoutSavedState";
   // Offline outbox: entries queued while the device has no connection, synced
@@ -234,7 +234,7 @@
       input.id = id;
       const blank = document.createElement("option");
       blank.value = "";
-      blank.textContent = "Choose an option…";
+      blank.textContent = "Choose an optionâ€¦";
       input.appendChild(blank);
       Object.entries(field.choices || {}).forEach(([value, text]) => {
         const opt = document.createElement("option");
@@ -722,7 +722,7 @@
     const feedbackBtn = $("navFeedbackBtn");
     if (feedbackBtn) feedbackBtn.classList.toggle("active", which === "feedback");
     const downloadBtn = $("navDownloadBtn");
-    if (downloadBtn) downloadBtn.classList.toggle("active", which === "app");
+    if (downloadBtn) downloadBtn.classList.toggle("active", which === "update");
   }
 
   function route() {
@@ -733,8 +733,8 @@
       showScoutPage();
     } else if (hash === "#/feedback") {
       showFeedback();
-    } else if (hash === "#/app" || hash === "#/download") {
-      showAppSection();
+    } else if (hash === "#/update" || hash === "#/download") {
+      showUpdateSection();
     } else {
       showHome();
     }
@@ -745,7 +745,7 @@
     $("scoutingPage").classList.add("hidden");
     $("howToUseSection").classList.add("hidden");
     $("feedbackSection").classList.add("hidden");
-    $("appSection").classList.add("hidden");
+    $("updateSection").classList.add("hidden");
     $("startGuideSection").classList.remove("hidden");
     setActiveTab("guide");
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -756,7 +756,7 @@
     $("scoutingPage").classList.add("hidden");
     $("howToUseSection").classList.add("hidden");
     $("startGuideSection").classList.add("hidden");
-    $("appSection").classList.add("hidden");
+    $("updateSection").classList.add("hidden");
     $("feedbackSection").classList.remove("hidden");
     setActiveTab("feedback");
     if ((location.hash || "").toLowerCase() !== "#/feedback") {
@@ -768,7 +768,7 @@
   function showHome() {
     $("startGuideSection").classList.add("hidden");
     $("feedbackSection").classList.add("hidden");
-    $("appSection").classList.add("hidden");
+    $("updateSection").classList.add("hidden");
     $("welcomeSection").classList.remove("hidden");
     $("howToUseSection").classList.remove("hidden");
     $("scoutingPage").classList.add("hidden");
@@ -776,16 +776,16 @@
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  function showAppSection() {
+  function showUpdateSection() {
     $("welcomeSection").classList.add("hidden");
     $("scoutingPage").classList.add("hidden");
     $("howToUseSection").classList.add("hidden");
     $("startGuideSection").classList.add("hidden");
     $("feedbackSection").classList.add("hidden");
-    $("appSection").classList.remove("hidden");
-    setActiveTab("app");
-    if ((location.hash || "").toLowerCase() !== "#/app") {
-      history.replaceState(null, "", "#/app");
+    $("updateSection").classList.remove("hidden");
+    setActiveTab("update");
+    if ((location.hash || "").toLowerCase() !== "#/update") {
+      history.replaceState(null, "", "#/update");
     }
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -803,7 +803,7 @@
     }
     $("startGuideSection").classList.add("hidden");
     $("feedbackSection").classList.add("hidden");
-    $("appSection").classList.add("hidden");
+    $("updateSection").classList.add("hidden");
     $("welcomeSection").classList.add("hidden");
     $("howToUseSection").classList.remove("hidden");
     $("scoutingPage").classList.remove("hidden");
@@ -825,7 +825,7 @@
     config = obj;
     $("welcomeSection").classList.add("hidden");
     $("feedbackSection").classList.add("hidden");
-    $("appSection").classList.add("hidden");
+    $("updateSection").classList.add("hidden");
     $("scoutingPage").classList.remove("hidden");
     renderForm();
     $("jsonEditor").value = JSON.stringify(config, null, 2);
@@ -918,7 +918,7 @@
   $("navGuideBtn").addEventListener("click", showStartGuide);
   $("navFeedbackBtn").addEventListener("click", showFeedback);
   const navDownloadBtn = $("navDownloadBtn");
-  if (navDownloadBtn) navDownloadBtn.addEventListener("click", showAppSection);
+  if (navDownloadBtn) navDownloadBtn.addEventListener("click", showUpdateSection);
 
   // PWA "Install app" support (Chrome/Edge/Android): kept for browsers that
   // offer direct install (the phone cards now point at the .apk/.ipa files).
@@ -941,7 +941,7 @@
   }
   if (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) {
     const pwaHint = $("pwaInstallHint");
-    if (pwaHint) pwaHint.textContent = "You're running the installed app — nice!";
+    if (pwaHint) pwaHint.textContent = "You're running the installed app â€” nice!";
   }
   window.addEventListener("hashchange", route);
   window.addEventListener("online", () => { flushOutbox(); });
@@ -949,12 +949,12 @@
 
   // Feedback form: name/team/email optional, feedback required. The backend
   // saves the row to the owner's Google Sheet; the browser then emails the
-  // owner through FormSubmit — their free plan blocks server-side calls from
+  // owner through FormSubmit â€” their free plan blocks server-side calls from
   // cloud hosts, but browser posts from this page are fully supported. The
   // owner address is assembled from parts so scrapers can't harvest it here.
   const FEEDBACK_OWNER_EMAIL = ["rileyhh2901", "@", "gmail.com"].join("");
   function emailFeedbackToOwner(fields) {
-    const subject = `QR Scout feedback${fields.teamNumber ? ` — team ${fields.teamNumber}` : ""}${fields.name ? ` from ${fields.name}` : ""}`;
+    const subject = `QR Scout feedback${fields.teamNumber ? ` â€” team ${fields.teamNumber}` : ""}${fields.name ? ` from ${fields.name}` : ""}`;
     return fetch(`https://formsubmit.co/ajax/${encodeURIComponent(FEEDBACK_OWNER_EMAIL)}`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Accept: "application/json" },
@@ -1003,8 +1003,23 @@
           console.warn("Feedback email not sent:", emailError);
         });
       }
-      setFeedbackStatus(data.status || "Feedback received. Thank you!", false, false, true);
+      setFeedbackStatus(data.status || "Feedback submitted. Thank you!", false, false, true);
       $("feedbackForm").reset();
+      const anotherBtn = document.createElement("button");
+      anotherBtn.type = "button";
+      anotherBtn.className = "secondary";
+      anotherBtn.textContent = "Submit another";
+      anotherBtn.addEventListener("click", () => {
+        $("feedbackForm").reset();
+        setFeedbackStatus("Only the feedback box is required.", false);
+        setTimeout(() => { anotherBtn.remove(); }, 2000);
+      });
+      const statusEl = $("feedbackStatus");
+      if (statusEl && statusEl.nextSibling) {
+        statusEl.parentNode.insertBefore(anotherBtn, statusEl.nextSibling);
+      } else if (statusEl) {
+        statusEl.appendChild(anotherBtn);
+      }
     } catch (err) {
       setFeedbackStatus(`Could not send feedback: ${err.message}`, true);
     } finally {
@@ -1107,3 +1122,4 @@
   }
   route();
 })();
+
