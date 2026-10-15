@@ -90,6 +90,7 @@
         <a id="navScoutBtn" href="#/scout" class="tab-btn">Scout</a>
         <a id="navGuideBtn" href="#/start-guide" class="tab-btn">Start guide</a>
         <a id="navFeedbackBtn" href="#/feedback" class="tab-btn">Feedback</a>
+        <a id="navDownloadBtn" href="#/app" class="tab-btn">App</a>
       </nav>
     </div>
   </header>
@@ -271,6 +272,49 @@
       </div>
       <div id="feedbackStatus" class="status">Only the feedback box is required.</div>
     </form>
+  </section>
+
+  <section id="appSection" class="panel app-panel hidden" aria-label="Download the app">
+    <div class="eyebrow">App</div>
+    <h2>Download QR Scout — desktop apps &amp; installable web app</h2>
+    <p>Pick your platform. The desktop apps open QR Scout Online in its own window. The desktop and mobile apps also include an <strong>Update</strong> tab that checks GitHub for the latest release.</p>
+
+    <div class="download-grid">
+      <a class="download-card" href="https://github.com/Home-Grown-Code/QR-Scout-Online/releases/latest/download/QRScout-win-x64.exe">
+        <span class="download-name">Windows</span>
+        <small>64-bit Intel/AMD — installer (.exe)</small>
+      </a>
+      <a class="download-card" href="https://github.com/Home-Grown-Code/QR-Scout-Online/releases/latest/download/QRScout-win-arm64.exe">
+        <span class="download-name">Windows on ARM</span>
+        <small>Snapdragon / ARM laptops — installer (.exe)</small>
+      </a>
+      <a class="download-card" href="https://github.com/Home-Grown-Code/QR-Scout-Online/releases/latest/download/QRScout-mac-arm64.dmg">
+        <span class="download-name">Mac (Apple Silicon)</span>
+        <small>M1 / M2 / M3 / M4 — disk image (.dmg)</small>
+      </a>
+      <a class="download-card" href="https://github.com/Home-Grown-Code/QR-Scout-Online/releases/latest/download/QRScout-mac-x64.dmg">
+        <span class="download-name">Mac (Intel)</span>
+        <small>2020 and earlier — disk image (.dmg)</small>
+      </a>
+      <a class="download-card" href="https://github.com/Home-Grown-Code/QR-Scout-Online/releases/latest/download/QRScout-linux-x64.AppImage">
+        <span class="download-name">Linux (64-bit)</span>
+        <small>AppImage — chmod +x, then run</small>
+      </a>
+      <a class="download-card" href="https://github.com/Home-Grown-Code/QR-Scout-Online/releases/latest/download/QRScout-linux-arm64.AppImage">
+        <span class="download-name">Linux ARM</span>
+        <small>Raspberry Pi / ARM boards — AppImage</small>
+      </a>
+      <a class="download-card" href="https://github.com/Home-Grown-Code/QR-Scout-Online/releases/latest/download/QRScout-android.apk">
+        <span class="download-name">Android</span>
+        <small>Phone / tablet — app file (.apk, sideload)</small>
+      </a>
+      <a class="download-card" href="https://github.com/Home-Grown-Code/QR-Scout-Online/releases/latest/download/QRScout-iphone.ipa">
+        <span class="download-name">iPhone</span>
+        <small>App file (.ipa, sideload via AltStore/Sideloadly)</small>
+      </a>
+    </div>
+
+    <p class="hint">These installers are not code-signed. On macOS, right-click the app and choose <strong>Open</strong> the first time. On Windows, choose <em>More info → Run anyway</em> if SmartScreen warns you.</p>
   </section>
 
   </main>

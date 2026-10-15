@@ -59,12 +59,6 @@
     .version-value { font-size: 1.3rem; font-weight: 800; }
     .button-link { display: inline-flex; align-items: center; padding: 12px 18px; border-radius: 10px; border: 1px solid var(--border); color: var(--text); text-decoration: none; font-weight: 700; }
     a.button-link:hover { border-color: rgba(74,141,255,.6); background: rgba(74,141,255,.08); }
-    .download-heading { margin-top: 22px; }
-    .download-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin-top: 12px; }
-    .download-card { display: flex; flex-direction: column; gap: 6px; padding: 14px; border: 1px solid var(--border); border-radius: 12px; background: rgba(255,255,255,.02); color: var(--text); text-decoration: none; }
-    a.download-card:hover { border-color: rgba(74,141,255,.6); background: rgba(74,141,255,.08); }
-    .download-card .download-name { font-weight: 700; }
-    .download-card small { color: var(--muted); line-height: 1.4; }
   </style>
 </head><body>
   <div class="wrap">
@@ -145,43 +139,7 @@
         <div id="updateStatus" class="status">Tap “Check for updates” to look up the latest GitHub release.</div>
       </div>
 
-      <h3 class="download-heading">Download the latest version</h3>
-      <div class="download-grid" id="downloadGrid">
-        <a class="download-card" href="https://github.com/Home-Grown-Code/QR-Scout-Online/releases/latest/download/QRScout-win-x64.exe">
-          <span class="download-name">Windows</span>
-          <small>64-bit Intel/AMD — installer (.exe)</small>
-        </a>
-        <a class="download-card" href="https://github.com/Home-Grown-Code/QR-Scout-Online/releases/latest/download/QRScout-win-arm64.exe">
-          <span class="download-name">Windows on ARM</span>
-          <small>Snapdragon / ARM laptops — installer (.exe)</small>
-        </a>
-        <a class="download-card" href="https://github.com/Home-Grown-Code/QR-Scout-Online/releases/latest/download/QRScout-mac-arm64.dmg">
-          <span class="download-name">Mac (Apple Silicon)</span>
-          <small>M1 / M2 / M3 / M4 — disk image (.dmg)</small>
-        </a>
-        <a class="download-card" href="https://github.com/Home-Grown-Code/QR-Scout-Online/releases/latest/download/QRScout-mac-x64.dmg">
-          <span class="download-name">Mac (Intel)</span>
-          <small>2020 and earlier — disk image (.dmg)</small>
-        </a>
-        <a class="download-card" href="https://github.com/Home-Grown-Code/QR-Scout-Online/releases/latest/download/QRScout-linux-x64.AppImage">
-          <span class="download-name">Linux (64-bit)</span>
-          <small>AppImage — chmod +x, then run</small>
-        </a>
-        <a class="download-card" href="https://github.com/Home-Grown-Code/QR-Scout-Online/releases/latest/download/QRScout-linux-arm64.AppImage">
-          <span class="download-name">Linux ARM</span>
-          <small>Raspberry Pi / ARM boards — AppImage</small>
-        </a>
-        <a class="download-card" href="https://github.com/Home-Grown-Code/QR-Scout-Online/releases/latest/download/QRScout-android.apk">
-          <span class="download-name">Android</span>
-          <small>Phone / tablet — app file (.apk, sideload)</small>
-        </a>
-        <a class="download-card" href="https://github.com/Home-Grown-Code/QR-Scout-Online/releases/latest/download/QRScout-iphone.ipa">
-          <span class="download-name">iPhone</span>
-          <small>App file (.ipa, sideload via AltStore/Sideloadly)</small>
-        </a>
-      </div>
-
-      <p class="hint">These installers are not code-signed. On macOS, right-click the app and choose <strong>Open</strong> the first time. On Windows, choose <em>More info → Run anyway</em> if SmartScreen warns you.</p>
+      <p class="hint">When a newer version is available, open the releases page above to download it. To get the app on a new device, visit the website’s <strong>App</strong> tab.</p>
     </section>
   </div>
   <script src="qrcode.min.js"></script>
@@ -499,7 +457,7 @@
           var latestEl = $("latestVersion");
           if (latestEl) latestEl.textContent = latest ? normalizeVersion(latest) : "unknown";
           if (latest && versionNewer(latest, APP_VERSION)) {
-            setUpdateStatus("A newer version is available: " + latest + (published ? " (released " + published + ")" : "") + ". Install it from the downloads below.", "ok");
+            setUpdateStatus("A newer version is available: " + latest + (published ? " (released " + published + ")" : "") + ". Open the releases page above to download it.", "ok");
           } else if (latest) {
             setUpdateStatus("You're up to date — latest release is " + latest + (published ? " (" + published + ")" : "") + ".", "ok");
           } else {
