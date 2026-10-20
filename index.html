@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -6,11 +6,21 @@
 
   <!-- Primary SEO -->
   <title>2549 Millerbots Scouting — QR Scout Online | FRC Match Data to Sheets</title>
-  <meta name="description" content="2549 Millerbots Scouting (QR Scout Online) is a free FRC scouting app for Team 2549 and any FIRST Robotics team. Collect match scouting data with QR codes and sync it straight to your own Google Sheets — no hosting required.">
-  <meta name="keywords" content="2549, Millerbots, Millerbots 2549, Team 2549, 2549 Millerbots, 2549 scouting, Millerbots scouting, 2549 Millerbots scouting, QR scout, QR scouting, QR scout online, QR scout sheets, QR scouting sheets, scouting QR, scouting QR code, QR code scouting, scouting, scouting app, scouting sheets, scouting to Google Sheets, scout data to sheets, FRC scouting, FRC scouting app, FRC match scouting, FRC 2549, FRC Millerbots, FIRST Robotics scouting, robotics scouting, robotics match data, match scouting, match data, QR code match data, Google Sheets scouting, FIRST Robotics Competition">
+  <meta name="description" content="QR Scout Online is the official FRC scouting app for Team 2549 Millerbots. Free scouting app that collects match data with QR codes and syncs directly to your Google Sheets. Perfect for FRC teams 2549 and beyond.">
+  <meta name="keywords" content="QR Scout Online, 2549 Millerbots, FRC scouting app, Team 2549 scouting, Millerbots scouting, QR code scouting, FRC match data, Google Sheets scouting, robotics app, FRC 2549, QR Scout sheets, scouting to Google Sheets, FIRST Robotics scouting, FRC scouting software, match data collection, QR Scout">
   <meta name="author" content="2549 Millerbots — QR Scout Online">
   <meta name="robots" content="index, follow">
   <meta name="theme-color" content="#0d1b2a">
+  
+  <!-- Google verification and search engine optimization -->
+  <meta name="google-site-verification" content="placeholder_verification_code">
+  <meta name="yandex-verification" content="placeholder_yandex_code">
+  
+  <!-- Local business schema for Google Maps -->
+  <meta name="geo.region" content="US-VA">
+  <meta name="geo.placename" content="Richmond">
+  <meta name="geo.position" content="37.5407;-77.4360">
+  <meta name="ICBM" content="37.5407, -77.4360">
   <link rel="canonical" href="https://home-grown-code.github.io/QR-Scout-Online/">
 
   <!-- Open Graph (Facebook, LinkedIn, Discord, etc.) -->
@@ -20,7 +30,11 @@
   <meta property="og:description" content="Free FRC scouting app for Team 2549 Millerbots and any FIRST Robotics team. Collect match scouting data with QR codes and sync it straight to your own Google Sheets.">
   <meta property="og:url" content="https://home-grown-code.github.io/QR-Scout-Online/">
   <meta property="og:image" content="https://home-grown-code.github.io/QR-Scout-Online/assets/images/millerbot-orange.png">
+  <meta property="og:image:secure_url" content="https://home-grown-code.github.io/QR-Scout-Online/assets/images/millerbot-orange.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
   <meta property="og:locale" content="en_US">
+  <meta property="og:website_name" content="QR Scout Online">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary">
@@ -263,7 +277,7 @@
   <section id="appSection" class="panel app-panel hidden" aria-label="Download the app">
     <div class="eyebrow">App</div>
     <h2>Download QR Scout — desktop apps &amp; installable web app</h2>
-    <p>Pick your platform. The desktop apps open QR Scout Online in its own window and always load the latest version of the site.</p>
+    <p>Pick your platform. The desktop apps open QR Scout Online in its own window. The desktop and mobile apps also include an <strong>Update</strong> tab that checks GitHub for the latest release.</p>
 
     <div class="download-grid">
       <a class="download-card" href="https://github.com/Home-Grown-Code/QR-Scout-Online/releases/latest/download/QRScout-win-x64.exe">
@@ -302,6 +316,7 @@
 
     <p class="hint">These installers are not code-signed. On macOS, right-click the app and choose <strong>Open</strong> the first time. On Windows, choose <em>More info → Run anyway</em> if SmartScreen warns you.</p>
   </section>
+
   </main>
 
   <div id="commitModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="commitTitle">
@@ -332,7 +347,7 @@
     </div>
   </div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="assets/js/qrcode.min.js"></script>
   <script src="assets/js/app.js"></script>
 </body>
 </html>

@@ -1,8 +1,12 @@
 // QR Scout Online — desktop shell.
-// Preloads the app's local HTML instead of fetching from the web,
-// so the app works offline and always uses the latest bundled version.
+// Preloads a fully offline, self-contained scouting page bundled next to this
+// file (see index.html). It uses only QR codes — no network access — so the app
+// works with no Wi-Fi at competitions.
 const { app, BrowserWindow, shell } = require('electron');
 const path = require('path');
+
+// Shared logo — the same artwork the website uses (assets/images).
+const APP_ICON = path.join(__dirname, 'assets', 'images', 'millerbot-orange.png');
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -12,6 +16,7 @@ function createWindow() {
     minHeight: 500,
     autoHideMenuBar: true,
     backgroundColor: '#0d1320',
+    icon: APP_ICON,
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,

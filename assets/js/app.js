@@ -1,5 +1,27 @@
-﻿(() => {
-  const $ = (id) => document.getElementById(id);
+(() => {
+  // Resolve an element by id. If it's missing (e.g. a stale index.html served
+  // against this script), return a harmless no-op stub instead of null so that
+  // chained calls like $(el).classList.add(...) never throw and break routing.
+  const $ = (id) => {
+    const el = document.getElementById(id);
+    if (el) return el;
+    const noop = () => {};
+    return new Proxy({}, {
+      get: (_t, prop) => {
+        if (prop === "classList") return { add: noop, remove: noop, toggle: () => false, contains: () => false };
+        if (prop === "addEventListener" || prop === "removeEventListener" || prop === "appendChild" || prop === "remove" || prop === "focus" || prop === "click" || prop === "scrollIntoView" || prop === "setSelectionRange") return noop;
+        if (prop === "dataset") return {};
+        if (prop === "style") return {};
+        if (prop === "parentElement" || prop === "nextSibling") return null;
+        // String/number-ish props: default to "" so chained .trim()/Number() are safe.
+        if (prop === "value" || prop === "textContent" || prop === "innerHTML" || prop === "className" || prop === "id") return "";
+        if (prop in _t) return _t[prop];
+        return "";
+      },
+      set: (_t, prop, value) => { _t[prop] = value; return true; },
+      has: (_t, prop) => prop in _t
+    });
+  };
   const STORAGE_KEY = "qrscoutSavedState";
   // Offline outbox: entries queued while the device has no connection, synced
   // when it comes back (pit / airplane mode). Same-origin key, so the hosted
@@ -242,7 +264,7 @@
       input.id = id;
       const blank = document.createElement("option");
       blank.value = "";
-      blank.textContent = "Choose an optionâ€¦";
+      blank.textContent = "Choose an option\u2026";
       input.appendChild(blank);
       Object.entries(field.choices || {}).forEach(([value, text]) => {
         const opt = document.createElement("option");
@@ -742,7 +764,7 @@
     } else if (hash === "#/feedback") {
       showFeedback();
     } else if (hash === "#/app" || hash === "#/download") {
-      showUpdateSection();
+      showAppSection();
     } else {
       showHome();
     }
@@ -797,6 +819,7 @@
     }
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
+
 
   function showScoutPage() {
     if (!config) {
@@ -925,8 +948,8 @@
   $("navScoutBtn").addEventListener("click", showScoutPage);
   $("navGuideBtn").addEventListener("click", showStartGuide);
   $("navFeedbackBtn").addEventListener("click", showFeedback);
-  const navDownloadBtn = $("navDownloadBtn");
-  if (navDownloadBtn) navDownloadBtn.addEventListener("click", showAppSection);
+  $("navDownloadBtn").addEventListener("click", showAppSection);
+
 
   // PWA "Install app" support (Chrome/Edge/Android): kept for browsers that
   // offer direct install (the phone cards now point at the .apk/.ipa files).
@@ -949,7 +972,7 @@
   }
   if (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) {
     const pwaHint = $("pwaInstallHint");
-    if (pwaHint) pwaHint.textContent = "You're running the installed app â€” nice!";
+    if (pwaHint) pwaHint.textContent = "You're running the installed app \u2014 nice!";
   }
   window.addEventListener("hashchange", route);
   window.addEventListener("online", () => { flushOutbox(); });
@@ -957,12 +980,12 @@
 
   // Feedback form: name/team/email optional, feedback required. The backend
   // saves the row to the owner's Google Sheet; the browser then emails the
-  // owner through FormSubmit â€” their free plan blocks server-side calls from
+  // owner through FormSubmit - their free plan blocks server-side calls from
   // cloud hosts, but browser posts from this page are fully supported. The
   // owner address is assembled from parts so scrapers can't harvest it here.
   const FEEDBACK_OWNER_EMAIL = ["rileyhh2901", "@", "gmail.com"].join("");
   function emailFeedbackToOwner(fields) {
-    const subject = `QR Scout feedback${fields.teamNumber ? ` â€” team ${fields.teamNumber}` : ""}${fields.name ? ` from ${fields.name}` : ""}`;
+    const subject = `QR Scout feedback${fields.teamNumber ? ` \u2014 team ${fields.teamNumber}` : ""}${fields.name ? ` from ${fields.name}` : ""}`;
     return fetch(`https://formsubmit.co/ajax/${encodeURIComponent(FEEDBACK_OWNER_EMAIL)}`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Accept: "application/json" },

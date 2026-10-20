@@ -1,5 +1,7 @@
-# Capacitor generated native projects — rebuilt by `npx cap sync` in CI.
-# Only the shell (mobile/www), config, and icons are tracked.
+# Capacitor generated native projects — rebuilt by CI (`npx cap add` + `cap sync`).
+# Only the shell (mobile/www), the config, and the shared icon/splash source
+# images (resources/icon.png, resources/splash.png) are tracked. CI regenerates
+# the native app icons from resources/ with `npx capacitor-assets generate`.
 android/
 ios/
 node_modules/
@@ -24,3 +26,5 @@ runs.json
 v105.html
 local-deb-build.log
 alinux-ext/
+# Local IDE/agent tooling
+.continue/

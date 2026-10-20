@@ -828,3 +828,36 @@ a.download-card:hover {
 .guide-download {
   margin-top: 12px;
 }
+/* ---------- App / download tab ---------- */
+.app-panel { border-top: none; }
+
+.download-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.download-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text);
+  text-decoration: none;
+}
+
+.download-card .download-name { font-weight: 700; }
+
+a.download-card:hover {
+  border-color: rgba(74, 141, 255, 0.6);
+  background: rgba(74, 141, 255, 0.08);
+}
+
+.download-card small {
+  color: var(--muted);
+  line-height: 1.4;
+}
