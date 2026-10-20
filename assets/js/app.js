@@ -99,9 +99,9 @@
   let shouldAdvanceMatch = false;
 
   const sampleConfig = {
-    title: "Millerbots Scouting",
-    page_title: "Millerbots Scouting",
-    teamNumber: 2549,
+    title: "Gryphon Robotics Scouting",
+    page_title: "Gryphon Robotics Scouting",
+    teamNumber: 5549,
     delimiter: "\\t",
     sections: [
       {
@@ -118,9 +118,13 @@
         name: "Autonomous",
         fields: [
           { title: "Had auto?", type: "boolean", code: "Auto", defaultValue: false },
-          { title: "Fuel Scored in Auto?", type: "counter", code: "autoFuelScored", defaultValue: 0, min: 0, step: 3 },
-          { title: "Fuel Missed in Auto?", type: "counter", code: "autoFuelMissed", defaultValue: 0, min: 0, step: 1 },
-          { title: "Climbed in auto?", type: "boolean", code: "auClimb", defaultValue: false },
+         { title: "Carrots Scored on Level 1 During Auto?", type: "counter", code: "autoFuelScored", defaultValue: 0, min: 0, step: 3 },
+          { title: "Carrots Scored on Level 2 During Auto?", type: "counter", code: "autoFuelScored", defaultValue: 0, min: 0, step: 3 },
+          { title: "Carrots Scored on Level 3 During Auto?", type: "counter", code: "autoFuelScored", defaultValue: 0, min: 0, step: 3 },
+          { title: "Carrot Cakes Scored on Level 1 During Auto?", type: "counter", code: "autoFuelScored", defaultValue: 0, min: 0, step: 3 },
+          { title: "Carrot Cakes Scored on Level 2 During Auto?", type: "counter", code: "autoFuelScored", defaultValue: 0, min: 0, step: 3 },
+          { title: "Carrot Cakes Scored on Level 3 During Auto?", type: "counter", code: "autoFuelScored", defaultValue: 0, min: 0, step: 3 },
+          { title: "Carrots Scored In Oven During Auto", type: "counter", code: "autoFuelScored", defaultValue: 0, min: 0, step: 3 },
           { title: "Auto effectiveness", type: "range", code: "autoEff", defaultValue: 4, min: 1, max: 7, step: 1 }
         ]
       },
@@ -128,20 +132,22 @@
         name: "Teleop",
         fields: [
           { title: "Alliance won auto?", type: "boolean", code: "allianceWonAuto", defaultValue: false },
-          { title: "Fuel Scored in Teleop?", type: "counter", code: "telFuelScored", defaultValue: 0, min: 0, step: 3 },
-          { title: "Fuel Missed in Teleop?", type: "counter", code: "telFuelMissed", defaultValue: 0, min: 0, step: 1 },
+          { title: "Carrots Scored on Level 1?", type: "counter", code: "telFuelScored", defaultValue: 0, min: 0, step: 3 },
+          { title: "Carrots Scored on Level 2?", type: "counter", code: "telFuelScored", defaultValue: 0, min: 0, step: 3 },
+          { title: "Carrots Scored on Level 3?", type: "counter", code: "telFuelScored", defaultValue: 0, min: 0, step: 3 },
+          { title: "Carrot Cakes Scored on Level 1?", type: "counter", code: "telFuelScored", defaultValue: 0, min: 0, step: 3 },
+          { title: "Carrot Cakes Scored on Level 2?", type: "counter", code: "telFuelScored", defaultValue: 0, min: 0, step: 3 },
+          { title: "Carrot Cakes Scored on Level 3?", type: "counter", code: "telFuelScored", defaultValue: 0, min: 0, step: 3 },
+          { title: "Carrots Scored In Oven", type: "counter", code: "telFuelScored", defaultValue: 0, min: 0, step: 3 },
+
           { title: "Defended during match?", type: "boolean", code: "robotDefended", defaultValue: false },
-          { title: "Passed during match?", type: "boolean", code: "pass", defaultValue: false },
-          { title: "Bump?", type: "boolean", code: "bump", defaultValue: false },
-          { title: "Trench?", type: "boolean", code: "trench", defaultValue: false },
-          { title: "Stuck on fuel during match?", type: "boolean", code: "fuelStuck", defaultValue: false },
+      
           { title: "Issues", type: "select", required: true, code: "Failures", defaultValue: "No", choices: { No:"Zero issues", Mech:"Mechanical issue", Die:"Died/disconnected", Tip:"Tipped/fell over", Stu:"Stuck for >5-10 seconds", F:"Multiple issues (elaborate in comments)" } }
         ]
       },
       {
         name: "Endgame/Postmatch",
         fields: [
-          { title: "Climbed", type: "select", required: true, code: "climbedTel", defaultValue: "No", choices: { No:"No Climb", L1:"Level 1", L2:"Level 2", L3:"Level 3", F:"Failed Climb" } },
           { title: "Scored How?", type: "select", required: true, code: "scoredHow", defaultValue: "blank", choices: { blank:"(blank)", driving:"While driving", stationary:"While stationary", both:"Both", none:"No scoring" } },
           { title: "Scoring Accuracy", type: "range", code: "scoringEff", defaultValue: 4, min: 1, max: 7, step: 1 },
           { title: "Scoring Speed", type: "range", code: "scoringSped", defaultValue: 4, min: 1, max: 7, step: 1 },
@@ -149,6 +155,8 @@
           { title: "Driving skill", type: "range", code: "drivSkill", defaultValue: 4, min: 1, max: 7, step: 1 },
           { title: "Passing Skill", type: "range", code: "passSkill", defaultValue: 1, min: 1, max: 7, step: 1 },
           { title: "Defense Skill", type: "range", code: "defSkill", defaultValue: 1, min: 1, max: 7, step: 1 },
+          { title: "At dinner table", type: "boolean", code: "allianceWonAuto", defaultValue: false },
+          { title: "Carrots/Carrot Cakes In Robot At Table", type: "counter", code: "telFuelScored", defaultValue: 0, min: 0, step: 3 },
           { title: "Yellow/Red Card", type: "select", required: true, code: "yc", defaultValue: "No Card", choices: { "No Card":"No Card", Yellow:"Yellow Card", Red:"Red Card" } },
           { title: "Comments", type: "text", code: "co", defaultValue: "" }
         ]
